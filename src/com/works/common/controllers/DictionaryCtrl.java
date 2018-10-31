@@ -1,15 +1,22 @@
-package com.common.controllers;
+package com.works.common.controllers;
 
+import com.common.controllers.BaseCtrl;
+import com.common.service.BaseService;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.JsonHashMap;
+import com.works.common.services.DictionaryService;
 import org.apache.commons.lang.StringUtils;
 import java.util.List;
 
 /**
  * 显示数据字典
  */
-public class DictionaryCtrl extends BaseCtrl {
+public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
+
+    public DictionaryCtrl() {
+        super(DictionaryService.class);
+    }
 
     /**
      * 第一项为“全部”
@@ -90,4 +97,8 @@ public class DictionaryCtrl extends BaseCtrl {
         renderJson(jrd);
     }
 
+    @Override
+    public void handleRecord(Record record) {
+
+    }
 }

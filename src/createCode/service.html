@@ -1,0 +1,13 @@
+import com.common.service.BaseService;
+import com.bean.TableBean;
+
+public class {{name}}Service extends BaseService {
+
+    private static String[] columnNameArr = {{{columnNameArr}}};
+    private static String[] columnTypeArr = {{{columnTypeArr}}};
+    private static String[] columnCommentArr = {{{columnCommentArr}}};
+
+    public {{name}}Service() {
+        super("{{tableName}}", new TableBean("{{tableName}}", columnNameArr, columnTypeArr, columnCommentArr));
+    }
+}

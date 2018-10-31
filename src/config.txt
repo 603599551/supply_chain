@@ -1,6 +1,6 @@
-jdbcUrl = jdbc:mysql://localhost:3306/ss?useUnicode=true&autoReconnect=true&rewriteBatchedStatements=TRUE
+jdbcUrl = jdbc:mysql://localhost:3308/supply_chain?useUnicode=true&autoReconnect=true&rewriteBatchedStatements=TRUE
 username = root
-password = 123456
+password =
 devMode = true
 
 minIdle=5

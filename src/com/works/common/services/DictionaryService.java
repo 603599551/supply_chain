@@ -1,5 +1,6 @@
-package com.common.service;
+package com.works.common.services;
 
+import com.common.service.BaseService;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 
@@ -12,7 +13,11 @@ import static com.constants.DictionaryConstants.DICT_RECORD_LIST;
 import static com.constants.DictionaryConstants.DICT_RECORD_MAP;
 import static com.constants.DictionaryConstants.DICT_STRING_MAP;
 
-public class DictionaryService {
+public class DictionaryService extends BaseService {
+
+    public DictionaryService() {
+        super("s_dictionary", null);
+    }
 
     public static void loadDictionary() {
         DICT_STRING_MAP.clear();

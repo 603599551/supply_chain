@@ -14,5 +14,10 @@
 !web/WEB-INF/web.xml
 !src/ehcache.xml
 
+# 不提交前端代码 #
+*.css
+*.js
+*.font
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*

@@ -53,7 +53,7 @@ public class AccessFilter implements Filter {
                 return true;
             }
         }
-        return false;
+        return true;
     }
 
     /**
