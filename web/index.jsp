@@ -8,6 +8,7 @@
     String:<input name="name"><br>
     Decimal:<input name="price"><br>
     int:<input name="num"><br>
+    int:<input name="numddd"><br>
     <input type="submit">
 </form>
 <form action="/mgr/works/pc/goodsCtrl/updateById" method="post">

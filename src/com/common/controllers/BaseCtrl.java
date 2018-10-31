@@ -19,6 +19,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
 
     protected T service;
 
+    /**
+     * 初始化service
+     * @param cla service的class
+     */
     public BaseCtrl(Class<T> cla){
         service = enhance(cla);
     }
@@ -73,6 +77,12 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         return result;
     }
 
+    /**
+     * 几天之后
+     * @param date 日期
+     * @param nextDay 天数
+     * @return date之后nextDay天后的日期
+     */
     protected String nextDay(String date, int nextDay){
         String result = "";
         try {
@@ -84,6 +94,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         }
         return result;
     }
+
+    /**
+     * 基础新增
+     */
     public void add(){
         JsonHashMap jhm = new JsonHashMap();
         Record record = this.getParaRecord();
@@ -101,6 +115,9 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         renderJson(jhm);
     }
 
+    /**
+     * 基础删除
+     */
     public void deleteByIds(){
         JsonHashMap jhm = new JsonHashMap();
         String[] ids = this.getParaValues("ids");
@@ -113,6 +130,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         }
         renderJson(jhm);
     }
+
+    /**
+     * 通过id展示
+     */
     public void showById(){
         JsonHashMap jhm = new JsonHashMap();
         String id = getPara("id");
@@ -126,8 +147,15 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         renderJson(jhm);
     }
 
+    /**
+     * 处理record中字典值添加中文
+     * @param record 目标record
+     */
     public abstract void handleRecord(Record record);
 
+    /**
+     * 基础修改
+     */
     public void updateById(){
         JsonHashMap jhm = new JsonHashMap();
         Record record = this.getParaRecord();
@@ -144,6 +172,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         }
         renderJson(jhm);
     }
+
+    /**
+     * 基础查询
+     */
     public void list(){
         JsonHashMap jhm = new JsonHashMap();
         try{
@@ -161,6 +193,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         }
         renderJson(jhm);
     }
+
+    /**
+     * 基础分页查询
+     */
     public void query(){
         JsonHashMap jhm = new JsonHashMap();
         try{
