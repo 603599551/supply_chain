@@ -15,4 +15,14 @@ public class WarehouseCountCtrl extends BaseCtrl<WarehouseCountService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

@@ -15,4 +15,14 @@ public class PurchaseOrderCtrl extends BaseCtrl<PurchaseOrderService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

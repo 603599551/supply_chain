@@ -15,4 +15,14 @@ public class OrderScrapCtrl extends BaseCtrl<OrderScrapService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

@@ -15,4 +15,14 @@ public class WarehourseMovementOrderCtrl extends BaseCtrl<WarehourseMovementOrde
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

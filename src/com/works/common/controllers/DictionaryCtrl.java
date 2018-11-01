@@ -101,4 +101,14 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
     public void handleRecord(Record record) {
 
     }
+
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
 }

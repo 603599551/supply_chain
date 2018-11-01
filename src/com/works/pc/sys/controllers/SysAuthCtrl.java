@@ -15,4 +15,14 @@ public class SysAuthCtrl extends BaseCtrl<SysAuthService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

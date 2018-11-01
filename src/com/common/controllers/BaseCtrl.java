@@ -1,6 +1,6 @@
 package com.common.controllers;
 
-import com.Exception.PcException;
+import com.exception.PcException;
 import com.common.service.BaseService;
 import com.constants.KEY;
 import com.jfinal.core.Controller;
@@ -102,6 +102,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         JsonHashMap jhm = new JsonHashMap();
         Record record = this.getParaRecord();
         try {
+            handleAddRecord(record);
             boolean flag = service.add(record);
             if(flag){
                 jhm.putMessage("添加成功！");
@@ -154,12 +155,27 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
     public abstract void handleRecord(Record record);
 
     /**
+     * 处理新增时的特殊处理
+     * 比如创建时间穿件人等
+     * @param record
+     */
+    public abstract void handleAddRecord(Record record);
+
+    /**
+     * 处理修改时的特殊处理
+     * 比如修改时间、修改人等
+     * @param record
+     */
+    public abstract void handleUpdateRecord(Record record);
+
+    /**
      * 基础修改
      */
     public void updateById(){
         JsonHashMap jhm = new JsonHashMap();
         Record record = this.getParaRecord();
         try {
+            handleUpdateRecord(record);
             boolean flag = service.updateById(record);
             if(flag){
                 jhm.putMessage("修改成功！");

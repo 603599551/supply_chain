@@ -15,4 +15,14 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

@@ -15,4 +15,14 @@ public class OrderNumberCtrl extends BaseCtrl<OrderNumberService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

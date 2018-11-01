@@ -15,4 +15,14 @@ public class AddressCtrl extends BaseCtrl<AddressService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

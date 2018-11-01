@@ -1,6 +1,6 @@
 package com.common.service;
 
-import com.Exception.PcException;
+import com.exception.PcException;
 import com.bean.TableBean;
 import com.constants.KEY;
 import com.constants.Sql;

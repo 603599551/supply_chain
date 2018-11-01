@@ -15,4 +15,14 @@ public class StoreStockCtrl extends BaseCtrl<StoreStockService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }

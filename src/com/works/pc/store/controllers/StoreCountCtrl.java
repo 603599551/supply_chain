@@ -15,4 +15,14 @@ public class StoreCountCtrl extends BaseCtrl<StoreCountService> {
 
     }
 
+    @Override
+    public void handleAddRecord(Record record) {
+
+    }
+
+    @Override
+    public void handleUpdateRecord(Record record) {
+
+    }
+
 }
