@@ -161,6 +161,9 @@ public abstract class BaseService implements KEY, Sql{
      * @return
      */
     private Record getRecord(Record record){
+        if (record==null){
+            return null;
+        }
         Record result = new Record();
         String[] columnNameArr = tableBean.getColumnNameArr();
         if(columnNameArr != null && columnNameArr.length > 0){
