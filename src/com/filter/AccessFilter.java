@@ -63,7 +63,7 @@ public class AccessFilter implements Filter {
      */
     private boolean isLogin(HttpServletRequest req, HttpServletResponse resp) {
         UserSessionUtil usu = new UserSessionUtil(req);
-        if (usu.getUser() != null) {//访问后台页面
+        if (usu.getUserBean() != null) {//访问后台页面
             return true;
         } else {
             return false;

@@ -17,14 +17,18 @@ public class SysMenuService extends BaseService {
         super("s_sys_menu", new TableBean("s_sys_menu", columnNameArr, columnTypeArr, columnCommentArr));
     }
 
-    @Override
-    public List<Record> listBeforeReturn(List<Record> list) {
+    public List<Record> sort(List<Record> recordList){
         return null;
     }
 
     @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return list;
+    }
+
+    @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        return null;
+        return page;
      }
 
 }

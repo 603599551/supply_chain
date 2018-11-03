@@ -54,6 +54,8 @@ public class Config extends JFinalConfig {
 
     @Override
     public void configRoute(Routes routes) {
+
+
         routes.add("/mgr/works/pc/addressCtrl", AddressCtrl.class);
         routes.add("/mgr/works/pc/catalogCtrl", CatalogCtrl.class);
         routes.add("/mgr/works/pc/commonColorCtrl", CommonColorCtrl.class);

@@ -10,6 +10,7 @@ public class UserSessionUtil {
 
     private UserBean userBean;
     private HttpSession session;
+    private boolean login;
 
     public UserSessionUtil(HttpServletRequest request){
         //处理跨域问题
@@ -22,7 +23,20 @@ public class UserSessionUtil {
         userBean=(UserBean)session.getAttribute(KEY.SESSION_USER);
     }
 
-    public UserBean getUser() {
+    public boolean isLogin(){
+        return login;
+    }
+    public String getSysUserId(){
+        return userBean.getId();
+    }
+    public String getNickname(){
+        return userBean.getNickname();
+    }
+    public String getUsername(){
+        return userBean.getUsername();
+    }
+
+    public UserBean getUserBean() {
         return userBean;
     }
 

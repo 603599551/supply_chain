@@ -19,12 +19,12 @@ public class OrderReturnService extends BaseService {
 
     @Override
     public List<Record> listBeforeReturn(List<Record> list) {
-        return null;
+        return list;
     }
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        return null;
+        return page;
      }
 
 }
