@@ -6,6 +6,7 @@ import com.constants.KEY;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.sun.org.apache.regexp.internal.RE;
 import com.utils.JsonHashMap;
 import com.utils.NumberUtils;
 
@@ -215,6 +216,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         JsonHashMap jhm = new JsonHashMap();
         try{
             Record record = getParaRecord();
+            createRecordBeforeSelect(record);
             List<Record> list = this.service.list(record);
             if(list != null && list.size() > 0){
                 for(Record r : list){
@@ -244,6 +246,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
             if(record != null){
                 record.remove("pageNum", "pageSize");
             }
+            createRecordBeforeSelect(record);
             Page<Record> page = this.service.query(record, pageNum, pageSize);
             if(page != null && page.getList() != null && page.getList().size() > 0){
                 for(Record r : page.getList()){
