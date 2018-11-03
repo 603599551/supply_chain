@@ -9,9 +9,9 @@ import java.util.List;
 
 public class AddressService extends BaseService {
 
-    private static String[] columnNameArr = {"id","city","province","address"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
-    private static String[] columnCommentArr = {"","","",""};
+    private static String[] columnNameArr = {"id","city","province","address","state"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT"};
+    private static String[] columnCommentArr = {"","","","",""};
 
     public AddressService() {
         super("s_address", new TableBean("s_address", columnNameArr, columnTypeArr, columnCommentArr));
