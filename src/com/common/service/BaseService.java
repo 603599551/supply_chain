@@ -1,5 +1,6 @@
 package com.common.service;
 
+import com.alibaba.druid.util.StringUtils;
 import com.exception.PcException;
 import com.bean.TableBean;
 import com.constants.KEY;
@@ -7,6 +8,7 @@ import com.constants.Sql;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.StringUtil;
 import com.utils.UUIDTool;
 
 import java.util.ArrayList;
@@ -164,7 +166,7 @@ public abstract class BaseService implements KEY, Sql{
                         if(!"and".equals(andOr) && !"or".equals(andOr)){
                             throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
                         }
-                        StringBuilder sql = new StringBuilder(" " + andOr + " (1=1 ");
+                        StringBuilder sql = new StringBuilder(" " + andOr + " ( ");
                         String key = entry.getKey().replace(start + "_", "");
                         String[] termArr = key.split("_");
                         Object[] paramsArr = (Object[])entry.getValue();
@@ -176,8 +178,11 @@ public abstract class BaseService implements KEY, Sql{
                             if(oneTerm.length != 3){
                                 throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
                             }else{
+                                if (StringUtils.equals(term,termArr[0])){
+                                    oneTerm[2]="";
+                                }
                                 if("like".equals(oneTerm[1])){
-                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like ? ");
+                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like CONCAT('%',?,'%') ");
                                 }else if("eq".equals(oneTerm[1])){
                                     sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
                                 }else{
