@@ -2,6 +2,7 @@ package com.works.common.services;
 
 import com.common.service.BaseService;
 import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 
 import java.util.ArrayList;
@@ -65,5 +66,15 @@ public class DictionaryService extends BaseService {
             }
         }
 
+    }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
     }
 }

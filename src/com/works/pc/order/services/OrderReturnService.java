@@ -2,6 +2,10 @@ package com.works.pc.order.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import java.util.List;
 
 public class OrderReturnService extends BaseService {
 
@@ -12,4 +16,15 @@ public class OrderReturnService extends BaseService {
     public OrderReturnService() {
         super("s_order_return", new TableBean("s_order_return", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

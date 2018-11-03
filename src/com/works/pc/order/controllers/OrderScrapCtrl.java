@@ -25,4 +25,8 @@ public class OrderScrapCtrl extends BaseCtrl<OrderScrapService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

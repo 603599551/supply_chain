@@ -25,4 +25,8 @@ public class WarehouseScrapCtrl extends BaseCtrl<WarehouseScrapService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

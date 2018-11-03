@@ -10,4 +10,15 @@ public class {{name}}Service extends BaseService {
     public {{name}}Service() {
         super("{{tableName}}", new TableBean("{{tableName}}", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

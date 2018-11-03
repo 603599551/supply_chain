@@ -25,4 +25,8 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

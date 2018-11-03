@@ -25,4 +25,8 @@ public class SysAuthCtrl extends BaseCtrl<SysAuthService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

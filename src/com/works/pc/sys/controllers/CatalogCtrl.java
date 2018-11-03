@@ -25,4 +25,8 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

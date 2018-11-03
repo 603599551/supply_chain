@@ -25,4 +25,8 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

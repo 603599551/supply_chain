@@ -25,4 +25,8 @@ public class PurchaseReturnCtrl extends BaseCtrl<PurchaseReturnService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

@@ -25,4 +25,8 @@ public class SysMenuCtrl extends BaseCtrl<SysMenuService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

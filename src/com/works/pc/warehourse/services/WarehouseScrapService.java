@@ -2,6 +2,10 @@ package com.works.pc.warehourse.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import java.util.List;
 
 public class WarehouseScrapService extends BaseService {
 
@@ -12,4 +16,15 @@ public class WarehouseScrapService extends BaseService {
     public WarehouseScrapService() {
         super("s_warehouse_scrap", new TableBean("s_warehouse_scrap", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

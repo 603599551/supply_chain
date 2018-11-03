@@ -25,4 +25,8 @@ public class AddressCtrl extends BaseCtrl<AddressService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

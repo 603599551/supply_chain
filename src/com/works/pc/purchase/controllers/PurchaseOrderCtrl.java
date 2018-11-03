@@ -25,4 +25,8 @@ public class PurchaseOrderCtrl extends BaseCtrl<PurchaseOrderService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

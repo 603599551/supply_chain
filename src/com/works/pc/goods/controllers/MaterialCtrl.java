@@ -25,4 +25,8 @@ public class MaterialCtrl extends BaseCtrl<MaterialService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

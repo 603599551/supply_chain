@@ -215,15 +215,15 @@ public class Main {
 //            System.out.println("----------------------" + tableName + "--------------------------");
 //        }
 
-//        for(String tableName : getTableNames()){
-//            createOneTable(tableName);
-//            createRoute(tableName);
-//        }
-
-        String[] tableNames = {"s_sys_user", "s_supplier", "s_purchase_order", "s_purchase_return"};
-        for(String tableName : tableNames){
+        for(String tableName : getTableNames()){
             createOneTable(tableName);
+            createRoute(tableName);
         }
+
+//        String[] tableNames = {"s_sys_user", "s_supplier", "s_purchase_order", "s_purchase_return"};
+//        for(String tableName : tableNames){
+//            createOneTable(tableName);
+//        }
 
     }
 

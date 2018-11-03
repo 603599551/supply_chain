@@ -25,4 +25,8 @@ public class WarehourseOutOrderCtrl extends BaseCtrl<WarehourseOutOrderService> 
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

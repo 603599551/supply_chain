@@ -25,4 +25,8 @@ public class WarehourseMovementOrderCtrl extends BaseCtrl<WarehourseMovementOrde
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

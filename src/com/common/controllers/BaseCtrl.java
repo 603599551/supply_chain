@@ -168,6 +168,25 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
      */
     public abstract void handleUpdateRecord(Record record);
 
+
+    /**
+     * 根据查询条件处理record
+     * key
+     *      $all$or_name$like$or_pinyin$like$or_state$eq$and
+     * value
+     *      array
+     * key
+     *      all代表条件作为一个整体查询，or代表这个整体条件对外的逻辑关系，只允许为or/and
+     *      name代表字段名，like代表条件的方式，只允许为like/eq，or代表逻辑关系
+     * value
+     *      是一个数组，对应每个字段的具体值
+     * 上例：
+     * select * from tableName where 1=1 or(1=1 or name like ? or pinyin like ? and state=?)
+     * @param record 查询条件
+     */
+    public abstract void createRecordBeforeSelect(Record record);
+
+
     /**
      * 基础修改
      */

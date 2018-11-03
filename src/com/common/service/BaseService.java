@@ -81,7 +81,7 @@ public abstract class BaseService implements KEY, Sql{
      * @param record 查询条件，key是字段名，value不为空将被作为条件查询
      * @return 查询到的数据，如果没有查到，返回null
      */
-    public Record findOne(Record record) {
+    public Record findOne(Record record) throws PcException {
         List<Record> list = this.list(record);
         if(list != null){
             return list.get(0);
@@ -108,11 +108,11 @@ public abstract class BaseService implements KEY, Sql{
      * @param record 查询条件，key是字段名，value不为空将被作为条件查询
      * @return 查询到的集合
      */
-    public List<Record> list(Record record) {
+    public List<Record> list(Record record) throws PcException {
         StringBuilder select = new StringBuilder(SELECT.replace("{{tableName}}", tableName));
         List<Object> params = new ArrayList<>();
-        select.append(createWhereSql(getRecord(record), params));
-        return Db.find(select.toString(), params.toArray());
+        select.append(createWhereSql(record, params));
+        return listBeforeReturn(Db.find(select.toString(), params.toArray()));
     }
 
     /**
@@ -127,11 +127,11 @@ public abstract class BaseService implements KEY, Sql{
         StringBuilder select = new StringBuilder(_SELECT);
         StringBuilder from = new StringBuilder(_FROM.replace("{{tableName}}", tableName));
         List<Object> params = new ArrayList<>();
-        from.append(createWhereSql(getRecord(record), params));
+        from.append(createWhereSql(record, params));
         if(params != null && params.size() > 0){
-            return Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray());
+            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
         }else{
-            return Db.paginate(pageNum, pageSize, select.toString(), from.toString());
+            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
         }
     }
 
@@ -141,14 +141,56 @@ public abstract class BaseService implements KEY, Sql{
      * @param params 参数
      * @return
      */
-    private StringBuilder createWhereSql(Record record, List<Object> params){
+    private StringBuilder createWhereSql(Record record, List<Object> params) throws PcException{
         StringBuilder result = new StringBuilder("");
         if(record != null){
-            Map<String, Object> columns = record.getColumns();
-            for(Map.Entry<String, Object> entry : columns.entrySet()){
+            Record recordEntry = getRecord(record);
+            Map<String, Object> entryColumns = recordEntry.getColumns();
+            for(Map.Entry<String, Object> entry : entryColumns.entrySet()){
                 if(entry.getValue() != null){
                     result.append(" and `" + entry.getKey() + "`=? ");
                     params.add(entry.getValue());
+                }
+            }
+            Map<String, Object> columns = record.getColumns();
+            for(Map.Entry<String, Object> entry : columns.entrySet()){
+                if(entry.getValue() != null){
+                    if(entry.getKey().startsWith("$like_")){
+                        result.append(" and `" + entry.getKey().replace("$like_", "") + "` like ? ");
+                        params.add("%" + entry.getValue() + "%");
+                    }else if (entry.getKey().startsWith("$all")){
+                        String start = entry.getKey().split("_")[0];
+                        String andOr = start.split("\\$")[2];
+                        if(!"and".equals(andOr) && !"or".equals(andOr)){
+                            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+                        }
+                        StringBuilder sql = new StringBuilder(" " + andOr + " (1=1 ");
+                        String key = entry.getKey().replace(start + "_", "");
+                        String[] termArr = key.split("_");
+                        Object[] paramsArr = (Object[])entry.getValue();
+                        if(termArr.length != paramsArr.length){
+                            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！参数匹配长度是" + paramsArr.length);
+                        }
+                        for(String term : termArr){
+                            String[] oneTerm = term.split("\\$");
+                            if(oneTerm.length != 3){
+                                throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+                            }else{
+                                if("like".equals(oneTerm[1])){
+                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like ? ");
+                                }else if("eq".equals(oneTerm[1])){
+                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
+                                }else{
+                                    throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+                                }
+                            }
+                        }
+                        for(Object obj : paramsArr){
+                            params.add(obj);
+                        }
+                        sql.append(")");
+                        result.append(sql);
+                    }
                 }
             }
         }
@@ -176,5 +218,19 @@ public abstract class BaseService implements KEY, Sql{
         }
         return result;
     }
+
+    /**
+     * list方法返回之前执行的方法
+     * @param list 处理集合
+     * @return 返回集合
+     */
+    public abstract List<Record> listBeforeReturn(List<Record> list);
+
+    /**
+     * page方法返回之前执行的方法
+     * @param page 处理集合
+     * @return 返回集合
+     */
+    public abstract Page<Record> queryBeforeReturn(Page<Record> page);
 
 }

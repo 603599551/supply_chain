@@ -25,4 +25,8 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

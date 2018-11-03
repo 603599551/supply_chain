@@ -25,4 +25,8 @@ public class OrderCtrl extends BaseCtrl<OrderService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

@@ -111,4 +111,9 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
     public void handleUpdateRecord(Record record) {
 
     }
+
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

@@ -2,6 +2,10 @@ package com.works.pc.purchase.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import java.util.List;
 
 public class PurchaseReturnService extends BaseService {
 
@@ -12,4 +16,15 @@ public class PurchaseReturnService extends BaseService {
     public PurchaseReturnService() {
         super("s_purchase_return", new TableBean("s_purchase_return", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

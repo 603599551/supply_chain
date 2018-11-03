@@ -25,4 +25,8 @@ public class StoreProductRelationCtrl extends BaseCtrl<StoreProductRelationServi
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

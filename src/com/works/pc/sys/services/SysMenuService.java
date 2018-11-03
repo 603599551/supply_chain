@@ -2,6 +2,10 @@ package com.works.pc.sys.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import java.util.List;
 
 public class SysMenuService extends BaseService {
 
@@ -12,4 +16,15 @@ public class SysMenuService extends BaseService {
     public SysMenuService() {
         super("s_sys_menu", new TableBean("s_sys_menu", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

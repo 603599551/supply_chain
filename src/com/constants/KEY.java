@@ -12,6 +12,7 @@ public interface KEY {
 
     /**
      * 1开头
+     * 数据库CRUD操作报错
      * PcException code
      */
 
@@ -22,8 +23,10 @@ public interface KEY {
 
     /**
      * 2开头
+     * SQL拼写错误
      * AppException code
      */
+    String SQL_WHERE_CREATE_EXCEPTION = "20001";//createWhereSql方法中参数传递错误
 
 
 }

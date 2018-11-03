@@ -2,6 +2,10 @@ package com.works.pc.store.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
+
+import java.util.List;
 
 public class StoreCountService extends BaseService {
 
@@ -12,4 +16,15 @@ public class StoreCountService extends BaseService {
     public StoreCountService() {
         super("s_store_count", new TableBean("s_store_count", columnNameArr, columnTypeArr, columnCommentArr));
     }
+
+    @Override
+    public List<Record> listBeforeReturn(List<Record> list) {
+        return null;
+    }
+
+    @Override
+    public Page<Record> queryBeforeReturn(Page<Record> page) {
+        return null;
+     }
+
 }

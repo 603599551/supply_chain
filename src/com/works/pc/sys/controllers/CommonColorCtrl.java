@@ -25,4 +25,8 @@ public class CommonColorCtrl extends BaseCtrl<CommonColorService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }

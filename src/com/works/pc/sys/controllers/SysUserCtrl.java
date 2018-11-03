@@ -25,4 +25,8 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
 
     }
 
+    @Override
+    public void createRecordBeforeSelect(Record record) {
+
+    }
 }
