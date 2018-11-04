@@ -30,7 +30,7 @@ public class LoginCtrl extends Controller {
                 }
                 UserBean ub = new UserBean();
                 ub.setId(r.get("id"));
-                ub.setName(r.getStr("username"));
+                ub.setUsername(r.getStr("username"));
                 setSessionAttr(KEY.SESSION_USER, ub);
                 setCookie("userId", r.get("id"), 60 * 60 * 24 * 3);
 

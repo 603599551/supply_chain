@@ -1,4 +1,4 @@
-package com.works.pc.sys.services;
+package com.works.common.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;

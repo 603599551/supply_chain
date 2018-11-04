@@ -1,6 +1,8 @@
 package com.jfinal;
 
+import com.works.common.controllers.CommonColorCtrl;
 import com.works.common.controllers.DictionaryCtrl;
+import com.works.common.controllers.OrderNumberCtrl;
 import com.works.common.services.DictionaryService;
 import com.jfinal.config.*;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;

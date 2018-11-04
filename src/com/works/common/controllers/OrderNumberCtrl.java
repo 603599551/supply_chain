@@ -1,8 +1,8 @@
-package com.works.pc.sys.controllers;
+package com.works.common.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.jfinal.plugin.activerecord.Record;
-import com.works.pc.sys.services.OrderNumberService;
+import com.works.common.services.OrderNumberService;
 
 public class OrderNumberCtrl extends BaseCtrl<OrderNumberService> {
 

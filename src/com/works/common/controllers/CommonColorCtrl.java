@@ -1,8 +1,8 @@
-package com.works.pc.sys.controllers;
+package com.works.common.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.jfinal.plugin.activerecord.Record;
-import com.works.pc.sys.services.CommonColorService;
+import com.works.common.services.CommonColorService;
 
 public class CommonColorCtrl extends BaseCtrl<CommonColorService> {
 
