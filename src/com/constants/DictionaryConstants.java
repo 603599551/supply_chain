@@ -9,7 +9,7 @@ import java.util.Map;
 public class DictionaryConstants {
 
     //岗位常量
-    public static final String KIND = "post";
+    public static final String STATE = "state";
 
 
 
