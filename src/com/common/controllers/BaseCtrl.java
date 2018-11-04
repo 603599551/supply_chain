@@ -174,6 +174,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
      * 根据查询条件处理record
      * key
      *      $all$or_name$like$or_pinyin$like$or_state$eq$and
+     *      $sort
      * value
      *      array
      * key
@@ -182,7 +183,8 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
      * value
      *      是一个数组，对应每个字段的具体值
      * 上例：
-     * select * from tableName where 1=1 or(1=1 or name like ? or pinyin like ? and state=?)
+     * select * from tableName where 1=1 or( name like ? or pinyin like ? and state=?)
+     * order by name desc ,pinyin asc,state desc
      * @param record 查询条件
      */
     public abstract void createRecordBeforeSelect(Record record);
