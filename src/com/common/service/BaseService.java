@@ -5,16 +5,20 @@ import com.exception.PcException;
 import com.bean.TableBean;
 import com.constants.KEY;
 import com.constants.Sql;
+import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.StringUtil;
 import com.utils.UUIDTool;
+import javafx.beans.binding.ObjectExpression;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Before(Tx.class)
 public abstract class BaseService implements KEY, Sql{
 
     protected String tableName;
@@ -195,6 +199,8 @@ public abstract class BaseService implements KEY, Sql{
                         }
                         sql.append(")");
                         result.append(sql);
+                    }else if (StringUtils.equals(entry.getKey(),"$sort")){
+                        result.append(entry.getValue());
                     }
                 }
             }
