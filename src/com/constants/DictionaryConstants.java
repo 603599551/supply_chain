@@ -8,8 +8,10 @@ import java.util.Map;
 
 public class DictionaryConstants {
 
-    //岗位常量
+    //启用停用状态
     public static final String STATE = "state";
+    //仓库类型
+    public static final String WAREHOUSE_TYPE = "warehouse_type";
 
 
 
