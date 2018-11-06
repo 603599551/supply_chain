@@ -2,11 +2,19 @@ package com.works.pc.sys.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.BeanUtils;
 
 import java.util.List;
 
+/**
+ * 该类实现以下功能：
+ * 1.分类的增删改查
+ * 2.生成商品/原料分类树
+ * @author CaryZ
+ */
 public class CatalogService extends BaseService {
 
     private static String[] columnNameArr = {"id","num","sort","remark","name","parent_id","type"};
@@ -26,5 +34,21 @@ public class CatalogService extends BaseService {
     public Page<Record> queryBeforeReturn(Page<Record> page) {
         return page;
      }
+
+    /**
+     * 通过type查询s_catelog表生成一个分类树
+     * @author CaryZ
+     * @date 2018-11-06
+     * @param type 区别原料和商品类型 material:原料 product:商品
+     * @return record 分类树
+     */
+    public Record queryCategoryTree(String type) throws PcException{
+        Record typeRecord=new Record();
+        typeRecord.set("type",type);
+        Record root=new Record();
+        root.set("id","0");
+        BeanUtils.createTree(root,super.list(typeRecord));
+        return root;
+    }
 
 }

@@ -8,6 +8,8 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.utils.DateUtil;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
@@ -54,4 +56,73 @@ public class AddressService extends BaseService {
             return list;
     }
 
+    /**
+     * 该方法逻辑如下：
+     * 将供应商/仓库/门店信息的省,市,详细地址（不包含省市）合起来存到address中
+     * 根据address详细地址（包含省市）在地址表查询是否已存在地址信息
+     * 若存在，则不在地址表中添加，若不存在，则在地址表中添加
+     * 将地址id填到供应商/仓库/门店的address_id
+     * @author CaryZ
+     * @date 2018-11-06
+     * @param record 新增/修改的供应商/仓库/门店信息
+     * @return 运行成功/失败 返true/false
+     */
+    public boolean isExist(Record record) throws PcException{
+        String state=record.getStr("state");
+        String city=record.getStr("city");
+        String province=record.getStr("province");
+        //不含省市
+        String rawAddress=record.getStr("address");
+        //包含省市
+        String address=province+city+rawAddress;
+        Record aRecord= Db.findFirst("SELECT id FROM s_address WHERE address=?",address);
+        String addressId;
+        if (aRecord==null){
+            Record newAddress=new Record();
+            newAddress.set("city",city);
+            newAddress.set("province",province);
+            newAddress.set("address",address);
+            newAddress.set("state",state);
+            if (!this.add(newAddress)){
+                return false;
+            }
+            addressId=newAddress.getStr("id");
+        }else {
+            addressId=aRecord.getStr("id");
+            aRecord.set("state",state);
+            if (!this.updateById(aRecord)){
+                return false;
+            }
+        }
+        record.set("address_id",addressId);
+        return true;
+    }
+
+    /**
+     * 通过id联合查询地址表和供应商/仓库/门店表得到一条信息
+     * 联合查询的目的是将供应商/仓库/门店所在的省份province查询出来
+     * 将包含省市的address中的省市信息去掉
+     * @author CaryZ
+     * @date 2018-11-06
+     * @param id 记录id
+     * @param tableName 供应商/仓库/门店表
+     * @param isExist 供应商/仓库/门店表中是否存在address字段
+     * @return 返回一条供应商/仓库/门店信息
+     */
+    public Record queryMessage(String id,String tableName,boolean isExist){
+        String sql;
+        if (isExist){
+            sql="SELECT s.*,a.province FROM "+tableName+" s,s_address a WHERE s.address_id=a.id AND s.id=?";
+        }else {
+            sql="SELECT s.*,a.province,a.address FROM "+tableName+" s,s_address a WHERE s.address_id=a.id AND s.id=?";
+        }
+        Record record=Db.findFirst(sql,id);
+        if (record==null){
+            return null;
+        }
+        String rawAddress=record.getStr("address");
+        String address= StringUtils.substringAfter(rawAddress,"市");
+        record.set("address",address);
+        return record;
+    }
 }

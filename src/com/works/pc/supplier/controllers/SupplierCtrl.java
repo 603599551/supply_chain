@@ -11,6 +11,8 @@ import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.sys.services.AddressService;
 import org.apache.commons.lang.StringUtils;
 
+import static com.constants.DictionaryConstants.STATE;
+
 /**
  * 该类实现以下功能：
  * 1.单个供应商信息的增改查
@@ -20,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 
 public class SupplierCtrl extends BaseCtrl<SupplierService> {
 
-    private static final String STATE="state";
     private static final String FIELD_NUM="num";
     private static final String FIELD_PINYIN="pinyin";
     private static final String FIELD_NAME="name";
@@ -32,7 +33,6 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
 
     /**
      * 根据目标Record的state字段值(value)读取字典表得到state_text(name)
-     * 根据目标Record的address_id查询s_address表得到所在省份province
      * @author CaryZ
      * @date 2018-11-05
      * @param record 目标record

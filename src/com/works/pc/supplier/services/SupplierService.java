@@ -63,35 +63,13 @@ public class SupplierService extends BaseService {
      */
     @Override
     public boolean add(Record record) throws PcException {
-        String city=record.getStr("city");
-        String province=record.getStr("province");
-        //不含省市
-        String rawAddress=record.getStr("address");
-
-        //包含省市
-        String address=province+city+rawAddress;
-        record.set("address",address);
-        Record aRecord= Db.findFirst("SELECT id FROM s_address WHERE address=?",address);
-        String addressId;
-        if (aRecord==null){
-            Record newAddress=new Record();
-            newAddress.set("city",city);
-            newAddress.set("province",province);
-            newAddress.set("address",address);
-            newAddress.set("state",1);
-            if (!addressService.add(newAddress)){
-                return false;
-            }
-            addressId=newAddress.getStr("id");
-        }else {
-            addressId=aRecord.getStr("id");
-        }
-
-
-        record.set("address_id",addressId);
-        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
         record.set("state",1);
         record.set("update_date", DateUtil.GetDateTime());
+        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
+        record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
+        if (!addressService.isExist(record)){
+            return false;
+        }
         record.remove("province");
         return super.add(record);
     }
@@ -107,14 +85,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public Record findById(String id){
-        Record record=Db.findFirst("SELECT s.*,a.province FROM s_supplier s,s_address a WHERE s.address_id=a.id AND s.id=?",id);
-        if (record==null){
-            return null;
-        }
-        String rawAddress=record.getStr("address");
-        String address=StringUtils.substringAfter(rawAddress,"市");
-        record.set("address",address);
-        return record;
+        return addressService.queryMessage(id,"s_supplier",true);
     }
 
 
@@ -132,36 +103,21 @@ public class SupplierService extends BaseService {
         Record oldSupplier=super.findById(id);
         String oldAddress=oldSupplier.getStr("address");
         String oldName=oldSupplier.getStr("name");
-
-        String addressId;
+        String oldState=oldSupplier.getStr("state");
+        String name=record.getStr("name");
         String state=record.getStr("state");
         String city=record.getStr("city");
         String province=record.getStr("province");
-        String name=record.getStr("name");
         //不含省市
         String rawAddress=record.getStr("address");
         //包含省市
         String address=province+city+rawAddress;
-        //当地址有变动时
-        if (!StringUtils.equals(address,oldAddress)){
+        //当地址有变动或状态改变时
+        if (!StringUtils.equals(address,oldAddress)||!StringUtils.equals(state,oldState)){
             record.set("city",city);
-            //查询地址表中有无该地址信息
-            Record aRecord= Db.findFirst("SELECT id FROM s_address WHERE address=?",address);
-            //地址表中无该地址
-            if (aRecord==null){
-                Record newAddress=new Record();
-                newAddress.set("city",city);
-                newAddress.set("province",province);
-                newAddress.set("address",address);
-                newAddress.set("state",state);
-                if (!addressService.add(newAddress)){
-                    return false;
-                }
-                addressId=newAddress.getStr("id");
-            }else {
-                addressId=aRecord.getStr("id");
+            if (!addressService.isExist(record)){
+                return false;
             }
-            record.set("address_id",addressId);
         }
         if (!StringUtils.equals(name,oldName)){
             record.set("pinyin",HanyuPinyinHelper.getPinyinString(name));
