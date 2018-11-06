@@ -6,6 +6,7 @@ import com.bean.TableBean;
 import com.constants.KEY;
 import com.constants.Sql;
 import com.jfinal.aop.Before;
+import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
@@ -23,6 +24,10 @@ public abstract class BaseService implements KEY, Sql{
 
     protected String tableName;
     protected TableBean tableBean;
+
+    public <T> T enhance(Class<T> targetClass) {
+        return Enhancer.enhance(targetClass);
+    }
 
     /**
      * 构造方法 初始化表名和表信息
@@ -199,10 +204,12 @@ public abstract class BaseService implements KEY, Sql{
                         }
                         sql.append(")");
                         result.append(sql);
-                    }else if (StringUtils.equals(entry.getKey(),"$sort")){
-                        result.append(entry.getValue());
                     }
                 }
+            }
+            Object sort=columns.get("$sort");
+            if (sort!=null){
+                result.append(sort);
             }
         }
         return result;

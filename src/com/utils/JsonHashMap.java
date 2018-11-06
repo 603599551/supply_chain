@@ -27,7 +27,7 @@ public class JsonHashMap extends HashMap<String, Object> {
 
     private static final String CODE = "code";
     private static final String MESSAGE = "message";
-    private static final String DATE = "data";
+    private static final String DATA = "data";
 
     private static final String FAIL_MESSAGE = "服务器异常！";
     private static final String ERROR_MESSAGE = "数据加载失败！";
@@ -75,6 +75,7 @@ public class JsonHashMap extends HashMap<String, Object> {
      * @param value 值
      * @return 当前对象
      */
+    @Override
     public JsonHashMap put(String key, Object value) {
         super.put(key, value);
         return this;
@@ -86,7 +87,7 @@ public class JsonHashMap extends HashMap<String, Object> {
      * @return this
      */
     public JsonHashMap putSuccess(Object obj){
-        return put(DATE, obj);
+        return put(DATA, obj);
     }
 
     /**

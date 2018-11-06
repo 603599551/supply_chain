@@ -33,10 +33,9 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
      * @return
      */
     protected Record getParaRecord(){
-        Record result = null;
+        Record result = new Record();
         Enumeration<String> namesList = this.getRequest().getParameterNames();
         if(namesList != null && namesList.hasMoreElements()){
-            result = new Record();
             while(namesList.hasMoreElements()){
                 String name = namesList.nextElement();
                 result.set(name, getPara(name));
