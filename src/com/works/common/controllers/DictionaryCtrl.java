@@ -2,6 +2,7 @@ package com.works.common.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.common.service.BaseService;
+import com.constants.DictionaryConstants;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.JsonHashMap;
@@ -88,7 +89,10 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
         String dict = getPara("dict");
         JsonHashMap jrd = new JsonHashMap();
         try {
-            List<Record> list = Db.find("select name, value from s_dictionary where parent_id=(select id from s_dictionary where value=?) order by sort", dict);
+            List<Record> list= DictionaryConstants.DICT_RECORD_LIST.get(dict);
+            for (Record r:list){
+                r.remove("id","parent_id","sort","state_color");
+            }
             jrd.putSuccess(list);
         } catch (Exception e) {
             e.printStackTrace();
