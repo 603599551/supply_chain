@@ -31,12 +31,13 @@ import java.util.UUID;
 public class SupplierService extends BaseService {
     AddressService addressService=super.enhance(AddressService.class);
 
+    private static final String TABLENAME="s_supplier";
     private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","update_date","remark"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","DATETIME","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","",""};
 
     public SupplierService() {
-        super("s_supplier", new TableBean("s_supplier", columnNameArr, columnTypeArr, columnCommentArr));
+        super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
     }
 
     @Override
@@ -85,7 +86,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public Record findById(String id){
-        return addressService.queryMessage(id,"s_supplier",true);
+        return addressService.queryMessage(id,TABLENAME,true);
     }
 
 
@@ -101,30 +102,10 @@ public class SupplierService extends BaseService {
     public boolean updateById(Record record) throws PcException{
         String id=record.getStr("id");
         Record oldSupplier=super.findById(id);
-        String oldAddress=oldSupplier.getStr("address");
-        String oldName=oldSupplier.getStr("name");
-        String oldState=oldSupplier.getStr("state");
-        String name=record.getStr("name");
-        String state=record.getStr("state");
-        String city=record.getStr("city");
-        String province=record.getStr("province");
-        //不含省市
-        String rawAddress=record.getStr("address");
-        //包含省市
-        String address=province+city+rawAddress;
-        //当地址有变动或状态改变时
-        if (!StringUtils.equals(address,oldAddress)||!StringUtils.equals(state,oldState)){
-            record.set("city",city);
-            if (!addressService.isExist(record)){
-                return false;
-            }
-        }
-        if (!StringUtils.equals(name,oldName)){
-            record.set("pinyin",HanyuPinyinHelper.getPinyinString(name));
-        }
-        record.set("address",address);
+        if (!addressService.updateMessage(record,oldSupplier,true)){
+            return false;
+        };
         record.set("update_date",DateUtil.GetDateTime());
-        record.remove("province");
         return super.updateById(record);
     }
 }

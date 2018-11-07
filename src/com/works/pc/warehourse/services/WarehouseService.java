@@ -23,12 +23,13 @@ import java.util.List;
 public class WarehouseService extends BaseService {
     AddressService addressService=enhance(AddressService.class);
 
+    private static final String TABLENAME="s_warehouse";
     private static String[] columnNameArr = {"id","address_id","num","name","city","state","remark","pinyin","type"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","",""};
 
     public WarehouseService() {
-        super("s_warehouse", new TableBean("s_warehouse", columnNameArr, columnTypeArr, columnCommentArr));
+        super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
     }
 
     @Override
@@ -76,7 +77,7 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public Record findById(String id){
-        return addressService.queryMessage(id,"s_warehouse",false);
+        return addressService.queryMessage(id,TABLENAME,false);
     }
 
     /**
@@ -91,30 +92,9 @@ public class WarehouseService extends BaseService {
     public boolean updateById(Record record) throws PcException{
         String id=record.getStr("id");
         Record oldWarehouse=this.findById(id);
-        String oldAddress=oldWarehouse.getStr("address");
-        String oldName=oldWarehouse.getStr("name");
-        String oldState=oldWarehouse.getStr("state");
-        String name=record.getStr("name");
-        String state=record.getStr("state");
-        String city=record.getStr("city");
-        String province=record.getStr("province");
-        //不含省市
-        String rawAddress=record.getStr("address");
-        //包含省市
-        String address=province+city+rawAddress;
-        //当地址有变动或状态改变时
-        if (!StringUtils.equals(address,oldAddress)||!StringUtils.equals(state,oldState)){
-            record.set("city",city);
-            if (!addressService.isExist(record)){
-                return false;
-            }
-        }
-        if (!StringUtils.equals(name,oldName)){
-            record.set("pinyin",HanyuPinyinHelper.getPinyinString(name));
-        }
-        record.remove("province");
+        if (!addressService.updateMessage(record,oldWarehouse,false)){
+            return false;
+        };
         return super.updateById(record);
     }
-
-
 }
