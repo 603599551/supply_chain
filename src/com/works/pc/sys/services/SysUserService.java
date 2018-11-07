@@ -9,7 +9,7 @@ import java.util.List;
 
 public class SysUserService extends BaseService {
 
-    private static String[] columnNameArr = {"id","role_id","username","password","nickname","sex","phone","entry_ids","state","remark","updatedate","pyin"};
+    private static String[] columnNameArr = {"id","role_id","username","password","nickname","sex","phone","entry_ids","state","remark","updatedate","pinyin"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","",""};
 

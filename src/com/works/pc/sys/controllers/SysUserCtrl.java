@@ -1,8 +1,11 @@
 package com.works.pc.sys.controllers;
 
 import com.common.controllers.BaseCtrl;
+import com.constants.DictionaryConstants;
 import com.constants.KEY;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.DateUtil;
+import com.utils.HanyuPinyinHelper;
 import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.sys.services.SysUserService;
@@ -124,17 +127,25 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
 
     @Override
     public void handleRecord(Record record) {
-
+        if(record != null){
+            String state_text = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.STATE).get(record.getStr("state"));
+            record.set("state_text", state_text);
+        }
     }
 
     @Override
     public void handleAddRecord(Record record) {
-
+        record.set("state", 1);
+        String pinyin = HanyuPinyinHelper.getFirstLettersLo(record.getStr("nickname"));
+        record.set("pinyin", pinyin);
+        record.set("updatedate", DateUtil.GetDateTime());
     }
 
     @Override
     public void handleUpdateRecord(Record record) {
-
+        String pinyin = HanyuPinyinHelper.getFirstLettersLo(record.getStr("nickname"));
+        record.set("pinyin", pinyin);
+        record.set("updatedate", DateUtil.GetDateTime());
     }
 
     @Override
