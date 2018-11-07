@@ -131,7 +131,8 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
             String state_text = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.STATE).get(record.getStr("state"));
             record.set("state_text", state_text);
             String sexText = "0".equals(record.getStr("sex")) ? "女" : "男";
-            record.set("set_text", sexText);
+            record.set("sex_text", sexText);
+            record.remove("password");
         }
     }
 
