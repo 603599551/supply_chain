@@ -9,6 +9,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
+import com.utils.HanyuPinyinHelper;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
@@ -24,12 +25,13 @@ import java.util.List;
 @Before(Tx.class)
 public class AddressService extends BaseService {
 
+    private static final String TABLENAME="s_address";
     private static String[] columnNameArr = {"id","city","province","address","state"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT"};
     private static String[] columnCommentArr = {"","","","",""};
 
     public AddressService() {
-        super("s_address", new TableBean("s_address", columnNameArr, columnTypeArr, columnCommentArr));
+        super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
     }
 
     @Override
@@ -52,7 +54,7 @@ public class AddressService extends BaseService {
      * @return 返回集合 所有城市或者省份 去除重复
      */
     public List<Record> queryCityOrProvince(String keyword){
-            List<Record> list= Db.find("SELECT DISTINCT " +keyword+ " AS name,"+keyword+" AS value FROM s_address ORDER BY "+keyword+" ASC");
+            List<Record> list= Db.find("SELECT DISTINCT " +keyword+ " AS name,"+keyword+" AS value FROM "+TABLENAME+" ORDER BY "+keyword+" ASC");
             return list;
     }
 
@@ -75,7 +77,7 @@ public class AddressService extends BaseService {
         String rawAddress=record.getStr("address");
         //包含省市
         String address=province+city+rawAddress;
-        Record aRecord= Db.findFirst("SELECT id FROM s_address WHERE address=?",address);
+        Record aRecord= Db.findFirst("SELECT id FROM "+TABLENAME+" WHERE address=?",address);
         String addressId;
         if (aRecord==null){
             Record newAddress=new Record();
@@ -99,6 +101,45 @@ public class AddressService extends BaseService {
     }
 
     /**
+     * 通过id判断地址是否有变动，若有变则更新地址表的记录信息
+     * @author CaryZ
+     * @date 2018-11-07
+     * @param record 要修改成的数据
+     * @param oldItem 原数据
+     * @param isExist 表中是否存在address
+     * @return 运行成功返回true，否则false
+     * @throws PcException
+     */
+    public boolean updateMessage(Record record,Record oldItem,boolean isExist) throws PcException{
+        String oldAddress=oldItem.getStr("address");
+        String oldName=oldItem.getStr("name");
+        String oldState=oldItem.getStr("state");
+        String name=record.getStr("name");
+        String state=record.getStr("state");
+        String city=record.getStr("city");
+        String province=record.getStr("province");
+        //不含省市
+        String rawAddress=record.getStr("address");
+        //包含省市
+        String address=province+city+rawAddress;
+        //当地址有变动或状态改变时
+        if (!StringUtils.equals(address,oldAddress)||!StringUtils.equals(state,oldState)){
+            record.set("city",city);
+            if (!this.isExist(record)){
+                return false;
+            }
+        }
+        if (!StringUtils.equals(name,oldName)){
+            record.set("pinyin", HanyuPinyinHelper.getPinyinString(name));
+        }
+        if(isExist){
+            record.set("address",address);
+        }
+        record.remove("province");
+        return true;
+    }
+
+    /**
      * 通过id联合查询地址表和供应商/仓库/门店表得到一条信息
      * 联合查询的目的是将供应商/仓库/门店所在的省份province查询出来
      * 将包含省市的address中的省市信息去掉
@@ -112,9 +153,9 @@ public class AddressService extends BaseService {
     public Record queryMessage(String id,String tableName,boolean isExist){
         String sql;
         if (isExist){
-            sql="SELECT s.*,a.province FROM "+tableName+" s,s_address a WHERE s.address_id=a.id AND s.id=?";
+            sql="SELECT s.*,a.province FROM "+tableName+" s,"+TABLENAME+" a WHERE s.address_id=a.id AND s.id=?";
         }else {
-            sql="SELECT s.*,a.province,a.address FROM "+tableName+" s,s_address a WHERE s.address_id=a.id AND s.id=?";
+            sql="SELECT s.*,a.province,a.address FROM "+tableName+" s,"+TABLENAME+" a WHERE s.address_id=a.id AND s.id=?";
         }
         Record record=Db.findFirst(sql,id);
         if (record==null){
