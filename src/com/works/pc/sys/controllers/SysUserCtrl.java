@@ -52,6 +52,7 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
         }
         renderJson(jhm);
     }
+
     public void showMyDetail(){
         JsonHashMap jhm = new JsonHashMap();
         UserSessionUtil usu = new UserSessionUtil(getRequest());
@@ -68,6 +69,7 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
         }
         renderJson(jhm);
     }
+
     public void getUserInfo(){
         JsonHashMap jhm = new JsonHashMap();
         try {

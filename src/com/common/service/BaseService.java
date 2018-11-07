@@ -1,6 +1,7 @@
 package com.common.service;
 
 import com.alibaba.druid.util.StringUtils;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.bean.TableBean;
 import com.constants.KEY;
@@ -42,13 +43,19 @@ public abstract class BaseService implements KEY, Sql{
     /**
      * 通用新增方法
      * @param record 新增数据
-     * @return 新增成功返回true，否则返回false
+     * @return 新增成功返回record的id，否则返回null
      * @throws PcException
      */
-    public boolean add(Record record) throws PcException {
+    public String add(Record record) throws PcException {
         try{
-            record.set("id", UUIDTool.getUUID());
-            return Db.save(tableName, getRecord(record));
+            if(record.get("id") == null || record.getStr("id").length() == 0){
+                record.set("id", UUIDTool.getUUID());
+            }
+            boolean flag = Db.save(tableName, getRecord(record));
+            if(!flag){
+                return null;
+            }
+            return record.getStr("id");
         }catch (Exception e){
             System.out.println(e.getMessage());
             throw new PcException(ADD_EXCEPTION, e.getMessage());
@@ -83,8 +90,13 @@ public abstract class BaseService implements KEY, Sql{
      * @param id 目标id
      * @return 具体数据
      */
-    public Record findById(String id) {
+    public Record findById(String id) throws PcException {
+        try{
             return Db.findById(tableName, id);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new PcException(SELECT_EXCEPTION, "查询异常！");
+        }
     }
 
     /**
@@ -220,7 +232,7 @@ public abstract class BaseService implements KEY, Sql{
      * @param record
      * @return
      */
-    private Record getRecord(Record record){
+    protected Record getRecord(Record record){
         if (record==null){
             return null;
         }

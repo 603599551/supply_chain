@@ -19,6 +19,7 @@ public interface KEY {
     String ADD_EXCEPTION = "10001";
     String DELETE_EXCEPTION = "10002";
     String UPDATE_EXCEPTION = "10003";
+    String SELECT_EXCEPTION = "10004";
 
 
     /**

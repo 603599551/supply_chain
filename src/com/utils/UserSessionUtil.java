@@ -15,12 +15,16 @@ public class UserSessionUtil {
     public UserSessionUtil(HttpServletRequest request){
         //处理跨域问题
         if(true){
-
+            userBean = new UserBean();
+            userBean.setUsername("admin");
+            userBean.setId("1");
+            userBean.setNickname("管理员");
+            userBean.setRemark("备注");
         }else{
 
         }
-        session=request.getSession();
-        userBean=(UserBean)session.getAttribute(KEY.SESSION_USER);
+//        session=request.getSession();
+//        userBean=(UserBean)session.getAttribute(KEY.SESSION_USER);
     }
 
     public boolean isLogin(){

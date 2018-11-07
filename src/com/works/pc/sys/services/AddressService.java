@@ -83,7 +83,7 @@ public class AddressService extends BaseService {
             newAddress.set("province",province);
             newAddress.set("address",address);
             newAddress.set("state",state);
-            if (!this.add(newAddress)){
+            if (this.add(newAddress) == null){
                 return false;
             }
             addressId=newAddress.getStr("id");

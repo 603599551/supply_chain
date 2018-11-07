@@ -103,8 +103,8 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         Record record = this.getParaRecord();
         try {
             handleAddRecord(record);
-            boolean flag = service.add(record);
-            if(flag){
+            String id = service.add(record);
+            if(id != null){
                 jhm.putMessage("添加成功！");
             }else{
                 jhm.putFail("添加失败！");

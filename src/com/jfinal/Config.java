@@ -1,5 +1,7 @@
 package com.jfinal;
 
+import com.common.controllers.HomeCtrl;
+import com.common.controllers.LoginCtrl;
 import com.works.common.controllers.CommonColorCtrl;
 import com.works.common.controllers.DictionaryCtrl;
 import com.works.common.controllers.OrderNumberCtrl;
@@ -56,6 +58,9 @@ public class Config extends JFinalConfig {
 
     @Override
     public void configRoute(Routes routes) {
+
+        routes.add("/homeCtrl", HomeCtrl.class);
+        routes.add("/loginCtrl", LoginCtrl.class);
 
 
         routes.add("/mgr/works/pc/addressCtrl", AddressCtrl.class);
@@ -122,7 +127,7 @@ public class Config extends JFinalConfig {
     @Override
     public void configInterceptor(Interceptors interceptors) {
         // 给service增加事务控制，过滤方法名为save*，update*，delete*
-        interceptors.addGlobalServiceInterceptor(new TxByMethodRegex("(save.*|update.*|delete.*)"));
+        interceptors.addGlobalServiceInterceptor(new TxByMethodRegex("(save.*|update.*|delete.*|add.*)"));
     }
 
     @Override

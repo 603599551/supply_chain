@@ -50,16 +50,16 @@ public class WarehouseService extends BaseService {
      * @author CaryZ
      * @date 2018-11-06
      * @param record 新增数据
-     * @return 新增成功/失败 返回true/false
+     * @return 新增成功/失败 返回record的id/null
      * @throws PcException
      */
     @Override
-    public boolean add(Record record) throws PcException{
+    public String add(Record record) throws PcException{
         record.set("state",1);
         record.set("update_date", DateUtil.GetDateTime());
         record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
         if (!addressService.isExist(record)){
-            return false;
+            return null;
         }
         record.remove("province");
         return super.add(record);
