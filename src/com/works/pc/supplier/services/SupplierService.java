@@ -32,7 +32,7 @@ public class SupplierService extends BaseService {
     AddressService addressService=super.enhance(AddressService.class);
 
     private static final String TABLENAME="s_supplier";
-    private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","update_date","remark"};
+    private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","updatedate","remark"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","DATETIME","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","",""};
 
@@ -65,7 +65,7 @@ public class SupplierService extends BaseService {
     @Override
     public String add(Record record) throws PcException {
         record.set("state",1);
-        record.set("update_date", DateUtil.GetDateTime());
+        record.set("updatedate", DateUtil.GetDateTime());
         record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
         record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
         if (!addressService.isExist(record)){
@@ -105,7 +105,7 @@ public class SupplierService extends BaseService {
         if (!addressService.updateMessage(record,oldSupplier,true)){
             return false;
         };
-        record.set("update_date",DateUtil.GetDateTime());
+        record.set("updatedate",DateUtil.GetDateTime());
         return super.updateById(record);
     }
 }
