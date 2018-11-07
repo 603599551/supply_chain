@@ -153,6 +153,9 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
 
     @Override
     public void createRecordBeforeSelect(Record record) {
-
+        String keywords = this.getPara("keywords");
+        String keywords_key = "$all$and_username$like$or_pinyin$like$or_nickname$like$and";
+        String[] keywords_value = {keywords, keywords, keywords};
+        record.set(keywords_key, keywords_value);
     }
 }

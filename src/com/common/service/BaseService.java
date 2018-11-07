@@ -171,8 +171,13 @@ public abstract class BaseService implements KEY, Sql{
             Map<String, Object> entryColumns = recordEntry.getColumns();
             for(Map.Entry<String, Object> entry : entryColumns.entrySet()){
                 if(entry.getValue() != null){
-                    result.append(" and `" + entry.getKey() + "`=? ");
-                    params.add(entry.getValue());
+                    if(entry.getValue() instanceof String){
+                        String value = (String)entry.getValue();
+                        if(value.length() > 0){
+                            result.append(" and `" + entry.getKey() + "`=? ");
+                            params.add(entry.getValue());
+                        }
+                    }
                 }
             }
             Map<String, Object> columns = record.getColumns();
