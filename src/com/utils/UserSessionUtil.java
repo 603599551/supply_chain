@@ -20,6 +20,7 @@ public class UserSessionUtil {
             userBean.setId("1");
             userBean.setNickname("管理员");
             userBean.setRemark("备注");
+            userBean.put("store_color","#ffff00");
         }else{
 
         }
