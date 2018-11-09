@@ -1,0 +1,17 @@
+ALTER TABLE `s_store`
+	COMMENT='门店表',
+	CHANGE COLUMN `id` `id` VARCHAR(100) NOT NULL COMMENT 'UUID' FIRST,
+	CHANGE COLUMN `create_id` `create_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '创建用户ID' AFTER `id`,
+	CHANGE COLUMN `address_id` `address_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '门店地址ID' AFTER `create_id`,
+	CHANGE COLUMN `name` `name` VARCHAR(50) NULL DEFAULT NULL COMMENT '门店名称' AFTER `address_id`,
+	CHANGE COLUMN `city` `city` VARCHAR(20) NULL DEFAULT NULL COMMENT '门店所在城市' AFTER `name`,
+	CHANGE COLUMN `address` `address` VARCHAR(100) NULL DEFAULT NULL COMMENT '门店具体地址' AFTER `city`,
+	CHANGE COLUMN `phone` `phone` VARCHAR(20) NULL DEFAULT NULL COMMENT '门店联系电话' AFTER `address`,
+	CHANGE COLUMN `sort` `sort` INT(11) NULL DEFAULT NULL COMMENT '门店排序' AFTER `phone`,
+	CHANGE COLUMN `updatedate` `updatedate` VARCHAR(50) NULL DEFAULT NULL COMMENT '记录更新时间' AFTER `sort`,
+	CHANGE COLUMN `state` `state` INT(11) NULL DEFAULT NULL COMMENT '门店状态' AFTER `update_date`,
+	CHANGE COLUMN `color` `color` VARCHAR(10) NOT NULL COMMENT '门店颜色' AFTER `state`,
+	CHANGE COLUMN `remark` `remark` TEXT NULL COMMENT '门店备注' AFTER `color`;
+
+ALTER TABLE `s_store`
+	ADD COLUMN `pinyin` VARCHAR(50) NULL DEFAULT NULL COMMENT '门店名称拼音' AFTER `name`;
