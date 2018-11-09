@@ -1,5 +1,6 @@
 package com.common.controllers;
 
+import com.alibaba.fastjson.JSONObject;
 import com.exception.PcException;
 import com.common.service.BaseService;
 import com.constants.KEY;
@@ -10,6 +11,7 @@ import com.sun.org.apache.regexp.internal.RE;
 import com.utils.JsonHashMap;
 import com.utils.NumberUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.text.ParseException;
 import java.util.*;
@@ -75,6 +77,38 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
             }
         }
         return result;
+    }
+
+    public static Map getParameterMap(HttpServletRequest request){
+        Map<String,Object> returnMap = new HashMap();
+        Enumeration<String> names=request.getParameterNames();
+        while(names.hasMoreElements()){
+            String name=names.nextElement();
+            String value=request.getParameter(name);
+            String[] values=request.getParameterValues(name);
+            if(values.length==1){
+                returnMap.put(name, value);
+            }else{
+                returnMap.put(name, values);
+            }
+        }
+        return returnMap;
+    }
+
+    /**
+     * 接收JSON参数用这个
+     * @param request
+     * @return
+     */
+    public static JSONObject getJson(HttpServletRequest request){
+        JSONObject paraJsonObject=null;
+        Map paraMap=request.getParameterMap();
+        Iterator it=paraMap.keySet().iterator();
+        if(it.hasNext()){
+            Object obj=it.next();
+            paraJsonObject= JSONObject.parseObject(obj.toString());
+        }
+        return paraJsonObject;
     }
 
     /**

@@ -1,12 +1,20 @@
 package com.works.pc.goods.services;
 
+import com.alibaba.druid.util.StringUtils;
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
+import com.utils.StringUtil;
+import com.alibaba.fastjson.JSONArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Before(Tx.class)
 public class MaterialService extends BaseService {
 
     private static String[] columnNameArr = {"id","name","num","pinyin","cost_price","purchase_price","min_unit","min2mid_num","mid_unit","mid2max_num","max_unit","out_unit","attribute","brand","storage_condition","shelf_life_num","shelf_life_unit","security_time","order_type","model","createdate","create_id","updatedate","update_id","state","remark","type","catalog_id"};
@@ -27,4 +35,25 @@ public class MaterialService extends BaseService {
         return page;
      }
 
+    /**
+     * 根据盘点项JSON数组的ids查询material数据
+     * @author CaryZ
+     * @date 2018-11-08
+     * @param countItems 盘点项JSON数组
+     * @return materialList
+     */
+    public List<Record> queryMaterials(JSONArray countItems){
+        int countLen=countItems.size();
+        List<String> idList=new ArrayList<>(countLen);
+        StringBuffer sql=new StringBuffer("SELECT * FROM s_material WHERE id IN(");
+        for (int i=0;i<countLen;i++){
+            idList.add(countItems.getJSONObject(i).getString("id"));
+            if (i==countLen-1){
+                sql.append("?)");
+            }else {
+                sql.append("?,");
+            }
+        }
+        return Db.find(sql.toString(),idList.toArray());
+    }
 }

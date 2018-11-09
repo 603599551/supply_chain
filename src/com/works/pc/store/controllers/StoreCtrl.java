@@ -2,7 +2,11 @@ package com.works.pc.store.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.constants.DictionaryConstants;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.DateUtil;
+import com.utils.HanyuPinyinHelper;
+import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.store.services.StoreService;
 import org.apache.commons.lang.StringUtils;
@@ -49,7 +53,11 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
 
     @Override
     public void handleAddRecord(Record record) {
+        record.set("state",1);
         record.set("create_id",usu.getSysUserId());
+        record.set("updatedate", DateUtil.GetDateTime());
+        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
+        record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
     }
 
     @Override
@@ -76,5 +84,16 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
             record.remove("keyword");
         }
         record.set("$sort"," ORDER BY "+FIELD_STATE+" DESC,"+FIELD_SORT+" ASC");
+    }
+
+    /**
+     * 该方法实现查询门店表中所有门店
+     * @author CaryZ
+     * @date 2018-11-09
+     */
+    public void queryStores(){
+        JsonHashMap jhm=new JsonHashMap();
+        jhm.putSuccess(service.queryStores());
+        renderJson(jhm);
     }
 }

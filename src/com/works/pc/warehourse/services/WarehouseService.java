@@ -3,9 +3,11 @@ package com.works.pc.warehourse.services;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
+import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
 import com.utils.HanyuPinyinHelper;
 import com.works.pc.sys.services.AddressService;
@@ -20,6 +22,7 @@ import java.util.List;
  * @author CaryZ
  * @date 2018-11-06
  */
+@Before(Tx.class)
 public class WarehouseService extends BaseService {
     AddressService addressService=enhance(AddressService.class);
 
@@ -56,9 +59,6 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException{
-        record.set("state",1);
-        record.set("update_date", DateUtil.GetDateTime());
-        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
         if (!addressService.isExist(record)){
             return null;
         }

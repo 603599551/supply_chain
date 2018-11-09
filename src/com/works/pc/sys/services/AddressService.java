@@ -71,18 +71,14 @@ public class AddressService extends BaseService {
      */
     public boolean isExist(Record record) throws PcException{
         String state=record.getStr("state");
-        String city=record.getStr("city");
-        String province=record.getStr("province");
-        //不含省市
-        String rawAddress=record.getStr("address");
         //包含省市
-        String address=province+city+rawAddress;
+        String address=record.getStr("address");
         Record aRecord= Db.findFirst("SELECT id FROM "+TABLENAME+" WHERE address=?",address);
         String addressId;
         if (aRecord==null){
             Record newAddress=new Record();
-            newAddress.set("city",city);
-            newAddress.set("province",province);
+            newAddress.set("city",record.getStr("city"));
+            newAddress.set("province",record.getStr("province"));
             newAddress.set("address",address);
             newAddress.set("state",state);
             if (this.add(newAddress) == null){

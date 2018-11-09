@@ -3,10 +3,14 @@ package com.works.pc.store.services;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
+import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
 import com.utils.HanyuPinyinHelper;
+import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.sys.services.AddressService;
 
@@ -20,6 +24,7 @@ import java.util.List;
  * @author CaryZ
  * @date 2018-11-07
  */
+@Before(Tx.class)
 public class StoreService extends BaseService {
     AddressService addressService=super.enhance(AddressService.class);
 
@@ -42,6 +47,28 @@ public class StoreService extends BaseService {
         return page;
      }
 
+
+    /**
+     * 给新增的门店分配颜色
+     * @author CaryZ
+     * @date 2018-11-08
+     * @param record 新增的门店信息
+     * @return 分配成功/失败 返回true/false
+     * @throws PcException
+     */
+    public boolean allocateColor(Record record) throws PcException{
+        Record cRecord= Db.findFirst("SELECT color FROM s_common_color WHERE state='0' ORDER BY sort ASC");
+        String color=cRecord.getStr("color");
+        record.set("color",color);
+        try{
+            int flag=Db.update("UPDATE s_common_color SET state='1' WHERE color=?",color);
+            return flag==0? false:true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            throw new PcException(UPDATE_EXCEPTION, e.getMessage());
+        }
+    }
+
     /**
      * 该方法逻辑如下：
      * 将门店信息的省,市,详细地址（不包含省市）合起来存到address中
@@ -56,10 +83,7 @@ public class StoreService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException {
-        record.set("state",1);
-        record.set("updatedate", DateUtil.GetDateTime());
-        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
-        record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
+        allocateColor(record);
         if (!addressService.isExist(record)){
             return null;
         }
@@ -99,5 +123,15 @@ public class StoreService extends BaseService {
         };
         record.set("updatedate",DateUtil.GetDateTime());
         return super.updateById(record);
+    }
+
+    /**
+     * 该方法实现查询门店表中所有门店
+     * @author CaryZ
+     * @date 2018-11-09
+     */
+    public List<Record> queryStores(){
+        List<Record> list= Db.find("SELECT name,id AS value FROM "+TABLENAME+" ORDER BY sort ASC");
+        return list;
     }
 }

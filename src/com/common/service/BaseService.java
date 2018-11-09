@@ -1,6 +1,7 @@
 package com.common.service;
 
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.bean.TableBean;
@@ -16,7 +17,9 @@ import com.utils.StringUtil;
 import com.utils.UUIDTool;
 import javafx.beans.binding.ObjectExpression;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -252,6 +255,17 @@ public abstract class BaseService implements KEY, Sql{
             }
         }
         return result;
+    }
+
+    /**
+     * 获取表中sort的最大数
+     * @author CaryZ
+     * @date 2018-11-09
+     * @return
+     */
+    public synchronized int getCurrentSort(){
+        Record record=Db.findFirst("SELECT sort FROM "+this.tableName+" ORDER BY sort DESC LIMIT 1");
+        return record==null? 0:record.getInt("sort");
     }
 
     /**

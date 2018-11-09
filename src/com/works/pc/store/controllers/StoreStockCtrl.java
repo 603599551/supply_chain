@@ -25,8 +25,13 @@ public class StoreStockCtrl extends BaseCtrl<StoreStockService> {
 
     }
 
+    /**
+     * 门店库存列表
+     * 按照sort ASC排序
+     * @param record 查询条件
+     */
     @Override
     public void createRecordBeforeSelect(Record record) {
-
+        record.set("$sort"," ORDER BY sort ASC");
     }
 }

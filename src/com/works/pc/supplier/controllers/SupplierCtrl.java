@@ -6,6 +6,8 @@ import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.sun.prism.impl.packrect.RectanglePacker;
+import com.utils.DateUtil;
+import com.utils.HanyuPinyinHelper;
 import com.utils.JsonHashMap;
 import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.sys.services.AddressService;
@@ -49,7 +51,10 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
 
     @Override
     public void handleAddRecord(Record record) {
-
+        record.set("state",1);
+        record.set("updatedate", DateUtil.GetDateTime());
+        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
+        record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
     }
 
     @Override

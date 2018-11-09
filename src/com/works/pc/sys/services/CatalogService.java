@@ -3,8 +3,10 @@ package com.works.pc.sys.services;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
+import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
  * 2.生成商品/原料分类树
  * @author CaryZ
  */
+@Before(Tx.class)
 public class CatalogService extends BaseService {
 
     private static final String TABLENAME="s_catalog";
@@ -40,7 +43,7 @@ public class CatalogService extends BaseService {
      * 通过type查询s_catelog表生成一个分类树
      * @author CaryZ
      * @date 2018-11-06
-     * @param type 区别原料和商品类型 material:原料 product:商品
+     * @param type 区别原料和商品类型 0:原料 1:商品
      * @return record 分类树
      */
     public Record queryCategoryTree(String type) throws PcException{

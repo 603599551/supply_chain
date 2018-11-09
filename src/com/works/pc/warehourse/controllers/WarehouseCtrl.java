@@ -3,6 +3,8 @@ package com.works.pc.warehourse.controllers;
 import com.common.controllers.BaseCtrl;
 import com.constants.DictionaryConstants;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.DateUtil;
+import com.utils.HanyuPinyinHelper;
 import com.works.pc.warehourse.services.WarehouseService;
 import org.apache.commons.lang.StringUtils;
 
@@ -50,7 +52,9 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
 
     @Override
     public void handleAddRecord(Record record) {
-
+        record.set("state",1);
+        record.set("update_date", DateUtil.GetDateTime());
+        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
     }
 
     @Override

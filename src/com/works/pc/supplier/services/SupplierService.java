@@ -64,10 +64,6 @@ public class SupplierService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException {
-        record.set("state",1);
-        record.set("updatedate", DateUtil.GetDateTime());
-        record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
-        record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
         if (!addressService.isExist(record)){
             return null;
         }
