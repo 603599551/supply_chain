@@ -9,7 +9,7 @@ ALTER TABLE `s_store`
 	CHANGE COLUMN `phone` `phone` VARCHAR(20) NULL DEFAULT NULL COMMENT '门店联系电话' AFTER `address`,
 	CHANGE COLUMN `sort` `sort` INT(11) NULL DEFAULT NULL COMMENT '门店排序' AFTER `phone`,
 	CHANGE COLUMN `updatedate` `updatedate` VARCHAR(50) NULL DEFAULT NULL COMMENT '记录更新时间' AFTER `sort`,
-	CHANGE COLUMN `state` `state` INT(11) NULL DEFAULT NULL COMMENT '门店状态' AFTER `update_date`,
+	CHANGE COLUMN `state` `state` INT(11) NULL DEFAULT NULL COMMENT '门店状态' AFTER `updatedate`,
 	CHANGE COLUMN `color` `color` VARCHAR(10) NOT NULL COMMENT '门店颜色' AFTER `state`,
 	CHANGE COLUMN `remark` `remark` TEXT NULL COMMENT '门店备注' AFTER `color`;
 

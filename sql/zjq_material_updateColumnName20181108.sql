@@ -19,6 +19,4 @@ ALTER TABLE `s_material`
 	CHANGE COLUMN `storage_condition` `storage_condition` VARCHAR(100) NULL DEFAULT NULL COMMENT '原料存储条件' AFTER `brand`,
 	CHANGE COLUMN `shelf_life_num` `shelf_life_num` VARCHAR(100) NULL DEFAULT NULL COMMENT '原料保质期' AFTER `storage_condition`,
 	CHANGE COLUMN `shelf_life_unit` `shelf_life_unit` VARCHAR(100) NULL DEFAULT NULL COMMENT '保质期单位（天）' AFTER `shelf_life_num`,
-	CHANGE COLUMN `security_time` `security_time` VARCHAR(50) NULL DEFAULT NULL COMMENT '原料到货周期' AFTER `shelf_life_unit`,
-	CHANGE COLUMN `order_type` `order_type` VARCHAR(100) NULL DEFAULT N/* 大SQL查询 (2.9 KiB)，分割于 2,000 个字符 */
-
+	CHANGE COLUMN `security_time` `security_time` VARCHAR(50) NULL DEFAULT NULL COMMENT '原料到货周期' AFTER `shelf_life_unit`
