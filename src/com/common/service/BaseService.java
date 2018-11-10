@@ -322,4 +322,7 @@ public abstract class BaseService implements KEY, Sql{
      */
     public abstract Page<Record> queryBeforeReturn(Page<Record> page);
 
+    public String getTableName() {
+        return tableName;
+    }
 }

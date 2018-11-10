@@ -5,6 +5,7 @@ import com.exception.PcException;
 import com.common.service.BaseService;
 import com.constants.KEY;
 import com.jfinal.core.Controller;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.sun.org.apache.regexp.internal.RE;
@@ -307,15 +308,15 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         record.set("id", id);
         record.set("state", state);
         try {
-            boolean flag = service.updateById(record);
+            boolean flag = Db.update(service.getTableName(), record);
             if(flag){
                 jhm.putMessage("修改状态成功！");
             }else{
                 jhm.putFail("修改状态失败！");
             }
-        } catch (PcException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            jhm.putFail(e.getMsg());
+            jhm.putFail(e.getMessage());
         }
         renderJson(jhm);
     }
