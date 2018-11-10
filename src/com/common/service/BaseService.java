@@ -269,6 +269,25 @@ public abstract class BaseService implements KEY, Sql{
     }
 
     /**
+     * 通过指定字段，对应参数值查询数据
+     * @param columnName 字段名
+     * @param columnValue 参数值
+     * @return 所有数据
+     */
+    public List<Record> selectByColumnIn(String columnName, String... columnValue){
+        if(columnValue == null || columnValue.length == 0){
+            return null;
+        }
+        String selectSql = "select * from " + tableName + " where " + columnName + " in({{wildcard}})";
+        StringBuilder wildcard = new StringBuilder("");
+        for(String s : columnValue){
+            wildcard.append("?,");
+        }
+        selectSql = selectSql.replace("{{wildcard}}", wildcard.substring(0, wildcard.length() - 1));
+        return Db.find(selectSql, columnValue);
+    }
+
+    /**
      * list方法返回之前执行的方法
      * @param list 处理集合
      * @return 返回集合

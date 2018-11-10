@@ -31,9 +31,9 @@ public class StoreStockService extends BaseService {
     MaterialService materialService=super.enhance(MaterialService.class);
 
     private static final String TABLENAME="s_store_stock";
-    private static String[] columnNameArr = {"id","store_id","state","quantity","batch_num","material_data","store_color","sort"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","INT","INT","VARCHAR","VARCHAR","VARCHAR","INT"};
-    private static String[] columnCommentArr = {"","","","","","","",""};
+    private static String[] columnNameArr = {"id","store_id","state","quantity","batch_num","material_data","store_color","sort","material_id"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","INT","INT","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR"};
+    private static String[] columnCommentArr = {"","","","","","","","",""};
 
     public StoreStockService() {
         super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
