@@ -29,5 +29,9 @@ public interface KEY {
      */
     String SQL_WHERE_CREATE_EXCEPTION = "20001";//createWhereSql方法中参数传递错误
 
+    /**
+     * 删除时出现业务异常
+     */
+    String APP_DELETE_EXCEPTION = "30001";
 
 }
