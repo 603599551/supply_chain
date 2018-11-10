@@ -26,7 +26,6 @@ import java.util.List;
  */
 @Before(Tx.class)
 public class StoreService extends BaseService {
-    AddressService addressService=super.enhance(AddressService.class);
 
     private static final String TABLENAME="s_store";
     private static String[] columnNameArr = {"id","create_id","address_id","name","pinyin","city","address","phone","sort","updatedate","state","color","remark"};
@@ -83,6 +82,7 @@ public class StoreService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException {
+        AddressService addressService=super.enhance(AddressService.class);
         allocateColor(record);
         record.set("sort",getCurrentSort());
         if (!addressService.isExist(record)){
@@ -103,6 +103,7 @@ public class StoreService extends BaseService {
      */
     @Override
     public Record findById(String id){
+        AddressService addressService=super.enhance(AddressService.class);
         return addressService.queryMessage(id,TABLENAME,true);
     }
 
@@ -117,6 +118,7 @@ public class StoreService extends BaseService {
      */
     @Override
     public boolean updateById(Record record) throws PcException{
+        AddressService addressService=super.enhance(AddressService.class);
         String id=record.getStr("id");
         Record oldStore=super.findById(id);
         if (!addressService.updateMessage(record,oldStore,true)){
@@ -136,6 +138,7 @@ public class StoreService extends BaseService {
      */
     @Override
     public Page<Record> query(Record record, int pageNum, int pageSize) throws PcException{
+        AddressService addressService=super.enhance(AddressService.class);
         return addressService.query(record,TABLENAME,pageNum,pageSize);
     }
     /**

@@ -29,8 +29,6 @@ import java.util.Map;
  */
 @Before(Tx.class)
 public class StoreCountService extends BaseService {
-    MaterialService materialService=super.enhance(MaterialService.class);
-    StoreStockService storeStockService=super.enhance(StoreStockService.class);
 
     private static final String TABLENAME="s_store_count";
     private static String[] columnNameArr = {"id","store_id","num","count_date","remark","count_item","store_color","count_id","sort"};
@@ -77,6 +75,8 @@ public class StoreCountService extends BaseService {
      * @throws PcException
      */
     public String add(Record record,JSONArray countItems)throws PcException{
+        MaterialService materialService=super.enhance(MaterialService.class);
+        StoreStockService storeStockService=super.enhance(StoreStockService.class);
         storeStockService.batchHandle(record,countItems);
         //将原料信息插入到相应的JSON元素中
         int countLen=countItems.size();

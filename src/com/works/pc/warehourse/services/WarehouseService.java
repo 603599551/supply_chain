@@ -24,7 +24,6 @@ import java.util.List;
  */
 @Before(Tx.class)
 public class WarehouseService extends BaseService {
-    AddressService addressService=enhance(AddressService.class);
 
     private static final String TABLENAME="s_warehouse";
     private static String[] columnNameArr = {"id","address_id","num","name","city","state","remark","pinyin","type"};
@@ -59,6 +58,7 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException{
+        AddressService addressService=enhance(AddressService.class);
         if (!addressService.isExist(record)){
             return null;
         }
@@ -77,6 +77,7 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public Record findById(String id){
+        AddressService addressService=enhance(AddressService.class);
         return addressService.queryMessage(id,TABLENAME,false);
     }
 
@@ -90,6 +91,7 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public Page<Record> query(Record record, int pageNum, int pageSize) throws PcException{
+        AddressService addressService=enhance(AddressService.class);
         return addressService.query(record,TABLENAME,pageNum,pageSize);
     }
 
@@ -103,6 +105,7 @@ public class WarehouseService extends BaseService {
      */
     @Override
     public boolean updateById(Record record) throws PcException{
+        AddressService addressService=enhance(AddressService.class);
         String id=record.getStr("id");
         Record oldWarehouse=this.findById(id);
         if (!addressService.updateMessage(record,oldWarehouse,false)){

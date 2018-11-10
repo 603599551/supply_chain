@@ -29,7 +29,6 @@ import java.util.UUID;
  */
 @Before(Tx.class)
 public class SupplierService extends BaseService {
-    AddressService addressService=super.enhance(AddressService.class);
 
     private static final String TABLENAME="s_supplier";
     private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","updatedate","remark"};
@@ -64,6 +63,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public String add(Record record) throws PcException {
+        AddressService addressService=super.enhance(AddressService.class);
         if (!addressService.isExist(record)){
             return null;
         }
@@ -82,6 +82,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public Record findById(String id){
+        AddressService addressService=super.enhance(AddressService.class);
         return addressService.queryMessage(id,TABLENAME,true);
     }
 
@@ -96,6 +97,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public Page<Record> query(Record record, int pageNum, int pageSize) throws PcException{
+        AddressService addressService=super.enhance(AddressService.class);
         return addressService.query(record,TABLENAME,pageNum,pageSize);
     }
 
@@ -109,6 +111,7 @@ public class SupplierService extends BaseService {
      */
     @Override
     public boolean updateById(Record record) throws PcException{
+        AddressService addressService=super.enhance(AddressService.class);
         String id=record.getStr("id");
         Record oldSupplier=super.findById(id);
         if (!addressService.updateMessage(record,oldSupplier,true)){

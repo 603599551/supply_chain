@@ -22,6 +22,7 @@ public class UserSessionUtil {
             userBean.setRemark("备注");
             userBean.put("store_color","#b7a6d4");
             userBean.put("store_id","4bfb454fa2f3477eaf11b9c88dc5ba42");
+            userBean.put("warehouse_id","999a561766b142349ca73f1cac54a18a");
         }else{
 
         }

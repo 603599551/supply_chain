@@ -28,9 +28,8 @@ import java.util.Map;
 @Before(Tx.class)
 public class StoreStockService extends BaseService {
 
-    MaterialService materialService=super.enhance(MaterialService.class);
-
     private static final String TABLENAME="s_store_stock";
+    private static final String STORE_ID="store_id";
     private static String[] columnNameArr = {"id","store_id","state","quantity","batch_num","material_data","store_color","sort","material_id"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","INT","INT","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","",""};
@@ -61,13 +60,14 @@ public class StoreStockService extends BaseService {
      * @throws PcException
      */
     public boolean batchHandle(Record record,JSONArray countItems) throws PcException{
+        MaterialService materialService=super.enhance(MaterialService.class);
         int countLen=countItems.size();
         //本次盘点项JSON转成的List<Record>
         List<Record> itemList=new ArrayList<>(countLen);
         //盘点项中需要新增的库存信息
         List<Record> itemAddList=new ArrayList<>(countLen);
 
-        StringBuffer sql=new StringBuffer("SELECT id,material_id FROM s_store_stock WHERE material_id IN(");
+        StringBuffer sql=new StringBuffer("SELECT id,material_id FROM "+TABLENAME+" WHERE material_id IN(");
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             itemList.add(countItem);
@@ -78,14 +78,14 @@ public class StoreStockService extends BaseService {
                 sql.append("?,");
             }
         }
-        sql.append(" AND store_id=?");
+        sql.append(" AND "+STORE_ID+"=?");
         int itemLen=itemList.size();
         //将itemList中的id单独提出来
         String[]ids=new String[itemLen+1];
         for (int i=0;i<itemLen;i++){
             ids[i]=itemList.get(i).getStr("id");
         }
-        ids[itemLen]=record.getStr("store_id");
+        ids[itemLen]=record.getStr(STORE_ID);
         //该店已存在的库存信息
         List<Record> stockList= Db.find(sql.toString(),ids);
         //根据盘点项查询出来的原料信息List
@@ -135,6 +135,7 @@ public class StoreStockService extends BaseService {
             if (item!=null){
                 Record updatedStock=new Record();
                 updatedStock.set("id",stockId);
+                updatedStock.set("material_id",materialId);
                 updatedStock.set("quantity",item.getStr("current_quantity"));
                 updateList.add(updatedStock);
                 removeList.add(item);
@@ -145,22 +146,25 @@ public class StoreStockService extends BaseService {
 
         //往已存在的库存记录更新原料信息
         int updateAddLen=updateList.size();
-        Map materialMap=new HashMap(materialLen);
-        for (int j=0;j<materialLen;j++){
-            materialMap.put(materialList.get(j).getStr("id"),materialList.get(j));
-        }
-        for (int i=0;i<updateAddLen;i++){
-            Record addedStock=updateList.get(i);
-            materialId=addedStock.getStr("material_id");
-            if (materialMap.get(materialId)!=null){
-                addedStock.set("material_data",materialMap.get(materialId).toString());
+        if (updateAddLen>0){
+            Map materialMap=new HashMap(materialLen);
+            for (int j=0;j<materialLen;j++){
+                materialMap.put(materialList.get(j).getStr("id"),materialList.get(j));
+            }
+            for (int i=0;i<updateAddLen;i++){
+                Record updatedStock=updateList.get(i);
+                materialId=updatedStock.getStr("material_id");
+                if (materialMap.get(materialId)!=null){
+                    updatedStock.set("material_data",materialMap.get(materialId).toString());
+                }
+            }
+            try{
+                return Db.batchUpdate(TABLENAME,"id",updateList,updateAddLen)==null? false:true;
+            }catch (Exception e){
+                throw new PcException(UPDATE_EXCEPTION,e.getMessage());
             }
         }
-        try{
-            return Db.batchUpdate("s_store_stock","id",updateList,updateList.size())==null? false:true;
-        }catch (Exception e){
-            throw new PcException(UPDATE_EXCEPTION,e.getMessage());
-        }
+        return true;
     }
 
     /**
@@ -188,7 +192,7 @@ public class StoreStockService extends BaseService {
             currentQuantity=itemAddList.get(j).getStr("current_quantity");
             Record addedStock=new Record();
             addedStock.set("id", UUIDTool.getUUID());
-            addedStock.set("store_id", record.getStr("store_id"));
+            addedStock.set(STORE_ID, record.getStr(STORE_ID));
             addedStock.set("state", record.getStr("state"));
             addedStock.set("quantity", currentQuantity);
             addedStock.set("sort", sort);  sort++;
@@ -200,7 +204,7 @@ public class StoreStockService extends BaseService {
             addList.add(addedStock);
         }
         try{
-            return Db.batchSave("s_store_stock",addList,addList.size())==null? false:true;
+            return Db.batchSave(TABLENAME,addList,addList.size())==null? false:true;
         }catch (Exception e){
             throw new PcException(ADD_EXCEPTION,e.getMessage());
         }
