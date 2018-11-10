@@ -137,7 +137,7 @@ public abstract class BaseService implements KEY, Sql{
     public List<Record> list(Record record) throws PcException {
         StringBuilder select = new StringBuilder(SELECT.replace("{{tableName}}", tableName));
         List<Object> params = new ArrayList<>();
-        select.append(createWhereSql(record, params));
+        select.append(createWhereSql(record, params, true));
         return listBeforeReturn(Db.find(select.toString(), params.toArray()));
     }
 
@@ -153,7 +153,7 @@ public abstract class BaseService implements KEY, Sql{
         StringBuilder select = new StringBuilder(_SELECT);
         StringBuilder from = new StringBuilder(_FROM.replace("{{tableName}}", tableName));
         List<Object> params = new ArrayList<>();
-        from.append(createWhereSql(record, params));
+        from.append(createWhereSql(record, params, true));
         if(params != null && params.size() > 0){
             return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
         }else{
@@ -165,12 +165,13 @@ public abstract class BaseService implements KEY, Sql{
      * 创建查询条件SQL，将参数存放在params中
      * @param record 条件
      * @param params 参数
+     * @param flag 是否执行getRecord方法，过滤掉表中不存在的字段
      * @return
      */
-    protected StringBuilder createWhereSql(Record record, List<Object> params) throws PcException{
+    protected StringBuilder createWhereSql(Record record, List<Object> params, boolean flag) throws PcException{
         StringBuilder result = new StringBuilder("");
         if(record != null){
-            Record recordEntry = getRecord(record);
+            Record recordEntry = flag ? getRecord(record) : record;
             Map<String, Object> entryColumns = recordEntry.getColumns();
             for(Map.Entry<String, Object> entry : entryColumns.entrySet()){
                 if(entry.getValue() != null){
