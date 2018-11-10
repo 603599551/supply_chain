@@ -84,6 +84,7 @@ public class StoreService extends BaseService {
     @Override
     public String add(Record record) throws PcException {
         allocateColor(record);
+        record.set("sort",getCurrentSort());
         if (!addressService.isExist(record)){
             return null;
         }
