@@ -52,3 +52,6 @@ ALTER TABLE `s_purchase_purchasereturn_process`
 	CHANGE COLUMN `parent_id` `parent_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '树形ID,多层处理' AFTER `remark`,
 	CHANGE COLUMN `to_user_id` `to_user_id` VARCHAR(100) NULL DEFAULT NULL COMMENT '下一级交给谁' AFTER `parent_id`,
 	CHANGE COLUMN `state` `state` VARCHAR(50) NULL DEFAULT NULL COMMENT '完成状态（1，0）' AFTER `to_user_id`;
+
+ALTER TABLE `s_purchase_purchasereturn_process`
+	ADD COLUMN `item` TEXT NULL DEFAULT NULL COMMENT '采购项' AFTER `num`;

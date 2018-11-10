@@ -1,0 +1,10 @@
+INSERT INTO `s_dictionary` VALUES ('5000', '采购单状态', '0', 'purchase_order_type', NULL, 5000);
+INSERT INTO `s_dictionary` VALUES ('5010', '物流', '5000', 'logistics', NULL, 5010);
+INSERT INTO `s_dictionary` VALUES ('5060', '关闭', '5000', 'shutdown', NULL, 5060);
+INSERT INTO `s_dictionary` VALUES ('5020', '采购', '5000', 'purchase', NULL, 5020);
+INSERT INTO `s_dictionary` VALUES ('5030', '财务', '5000', 'finance', NULL, 5030);
+INSERT INTO `s_dictionary` VALUES ('5040', '老板', '5000', 'boss', NULL, 5040);
+INSERT INTO `s_dictionary` VALUES ('5050', '仓库', '5000', 'warehouse', NULL, 5050);
+INSERT INTO `s_dictionary` VALUES ('6000', '采购流程状态', '0', 'purchase_process_type', NULL, 6000);
+INSERT INTO `s_dictionary` VALUES ('6010', '完成', '6000', '1', NULL, 6010);
+INSERT INTO `s_dictionary` VALUES ('6020', '未完成', '6000', '0', NULL, 6020);
