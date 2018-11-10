@@ -206,7 +206,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
     /**
      * 根据查询条件处理record
      * key
-     *      $all$or_name$like$or_pinyin$like$or_state$eq$and
+     *      $all$or#name$like$or#pinyin$like$or#state$eq$and
      *      $sort
      * value
      *      array

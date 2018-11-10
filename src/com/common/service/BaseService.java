@@ -186,18 +186,18 @@ public abstract class BaseService implements KEY, Sql{
             Map<String, Object> columns = record.getColumns();
             for(Map.Entry<String, Object> entry : columns.entrySet()){
                 if(entry.getValue() != null){
-                    if(entry.getKey().startsWith("$like_")){
-                        result.append(" and `" + entry.getKey().replace("$like_", "") + "` like ? ");
+                    if(entry.getKey().startsWith("$like#")){
+                        result.append(" and `" + entry.getKey().replace("$like#", "") + "` like ? ");
                         params.add("%" + entry.getValue() + "%");
                     }else if (entry.getKey().startsWith("$all")){
-                        String start = entry.getKey().split("_")[0];
+                        String start = entry.getKey().split("#")[0];
                         String andOr = start.split("\\$")[2];
                         if(!"and".equals(andOr) && !"or".equals(andOr)){
                             throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
                         }
                         StringBuilder sql = new StringBuilder(" " + andOr + " ( ");
-                        String key = entry.getKey().replace(start + "_", "");
-                        String[] termArr = key.split("_");
+                        String key = entry.getKey().replace(start + "#", "");
+                        String[] termArr = key.split("#");
                         Object[] paramsArr = (Object[])entry.getValue();
                         if(termArr.length != paramsArr.length){
                             throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！参数匹配长度是" + paramsArr.length);

@@ -52,7 +52,7 @@ public class SysRolesCtrl extends BaseCtrl<SysRolesService> {
     @Override
     public void createRecordBeforeSelect(Record record) {
         if(record != null){
-            record.set("$like_name", record.get("keyword"));
+            record.set("$like#name", record.get("keyword"));
         }
     }
 }

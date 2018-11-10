@@ -26,19 +26,22 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
      */
     public void getDictIncludeAll() {
         String dict = getPara("dict");
-        JsonHashMap jrd = new JsonHashMap();
+        JsonHashMap jhm = new JsonHashMap();
         try {
-            List<Record> list = Db.find("select name, value from s_dictionary where parent_id=(select id from s_dictionary where value=?) order by sort", dict);
+            List<Record> list= DictionaryConstants.DICT_RECORD_LIST.get(dict);
+            for (Record r:list){
+                r.remove("id","parent_id","sort","state_color");
+            }
             Record all = new Record();
-            all.set("value", "-1");
+            all.set("value", "");
             all.set("name", "全部");
             list.add(0, all);
-            jrd.putSuccess(list);
+            jhm.putSuccess(list);
         } catch (Exception e) {
             e.printStackTrace();
-            jrd.putError(e.getMessage());
+            jhm.putError(e.getMessage());
         }
-        renderJson(jrd);
+        renderJson(jhm);
     }
 
     /**
@@ -46,40 +49,22 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
      */
     public void getDictIncludeChoose() {
         String dict = getPara("dict");
-        JsonHashMap jrd = new JsonHashMap();
+        JsonHashMap jhm = new JsonHashMap();
         try {
-            List<Record> list;
-            //如果是消息管理查看，只显示部分数据
-            if (!StringUtils.equals(dict, "notice_type")) {
-                list = Db.find("select name, value from s_dictionary where parent_id=(select id from s_dictionary where value=?) order by sort", dict);
-                //绩效考核的时候去掉”请选择“选项
-                if (!StringUtils.equals(dict, "performance_type")) {
-                    Record all = new Record();
-                    all.set("value", "-1");
-                    all.set("name", "请选择");
-                    list.add(0, all);
-                }
-                //添加员工页面的在职状态只显示请选择和在职
-                if(StringUtils.equals(dict,"job_type")){
-                    for(int i = 1 ; i < list.size() ; ++i){
-                        if(!StringUtils.equals(list.get(i).getStr("value"),"on")){
-                            list.get(i).set("disabled",true);
-                        }
-                    }
-                }
-            } else {
-                list = Db.find("select name, value from s_dictionary where (value = 'apply_movein' or value = 'movein_notice') and parent_id=(select id from s_dictionary where value=? )",dict);
-                Record all = new Record();
-                all.set("value", "-1");
-                all.set("name", "请选择");
-                list.add(0, all);
+            List<Record> list= DictionaryConstants.DICT_RECORD_LIST.get(dict);
+            for (Record r:list){
+                r.remove("id","parent_id","sort","state_color");
             }
-            jrd.putSuccess(list);
+            Record all = new Record();
+            all.set("value", "");
+            all.set("name", "请选择");
+            list.add(0, all);
+            jhm.putSuccess(list);
         } catch (Exception e) {
             e.printStackTrace();
-            jrd.putError(e.getMessage());
+            jhm.putError(e.getMessage());
         }
-        renderJson(jrd);
+        renderJson(jhm);
     }
 
     /**
@@ -87,18 +72,18 @@ public class DictionaryCtrl extends BaseCtrl<DictionaryService> {
      */
     public void getDict() {
         String dict = getPara("dict");
-        JsonHashMap jrd = new JsonHashMap();
+        JsonHashMap jhm = new JsonHashMap();
         try {
             List<Record> list= DictionaryConstants.DICT_RECORD_LIST.get(dict);
             for (Record r:list){
                 r.remove("id","parent_id","sort","state_color");
             }
-            jrd.putSuccess(list);
+            jhm.putSuccess(list);
         } catch (Exception e) {
             e.printStackTrace();
-            jrd.putError(e.getMessage());
+            jhm.putError(e.getMessage());
         }
-        renderJson(jrd);
+        renderJson(jhm);
     }
 
     @Override

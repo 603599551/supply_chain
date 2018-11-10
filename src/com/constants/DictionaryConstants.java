@@ -12,6 +12,14 @@ public class DictionaryConstants {
     public static final String STATE = "state";
     //仓库类型
     public static final String WAREHOUSE_TYPE = "warehouse_type";
+    //储存条件
+    public static final String STORAGE_CONDITION = "storage_condition";
+    //保质期单位
+    public static final String SHELF_LIFE_UNIT = "shelf_life_unit";
+    //订单类型
+    public static final String ORDER_TYPE = "order_type";
+    //采购类型
+    public static final String PURCHASE_TYPE = "purchase_type";
 
 
 
