@@ -2,6 +2,7 @@ package com.works.pc.store.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.constants.DictionaryConstants;
+import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.DateUtil;
@@ -56,7 +57,7 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
 
     @Override
     public void handleAddRecord(Record record) {
-        record.set("state",1);
+        record.set("state","1");
         record.set("create_id",usu.getSysUserId());
         record.set("updatedate", DateUtil.GetDateTime());
         record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));

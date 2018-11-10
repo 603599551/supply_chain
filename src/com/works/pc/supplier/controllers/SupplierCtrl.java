@@ -54,7 +54,7 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
 
     @Override
     public void handleAddRecord(Record record) {
-        record.set("state",1);
+        record.set("state","1");
         record.set("updatedate", DateUtil.GetDateTime());
         record.set("pinyin", HanyuPinyinHelper.getPinyinString(record.getStr("name")));
         record.set("address",record.getStr("province")+record.getStr("city")+record.getStr("address"));
