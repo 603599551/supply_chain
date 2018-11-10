@@ -24,12 +24,12 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
 
     UserSessionUtil usu=new UserSessionUtil(getRequest());
 
-    private static final String FIELD_PHONE="phone";
-    private static final String FIELD_PINYIN="pinyin";
-    private static final String FIELD_NAME="name";
-    private static final String FIELD_ADDRESS="address";
-    private static final String FIELD_STATE="state";
-    private static final String FIELD_SORT="sort";
+    private static final String FIELD_PHONE="t.phone";
+    private static final String FIELD_PINYIN="t.pinyin";
+    private static final String FIELD_NAME="t.name";
+    private static final String FIELD_ADDRESS="t.address";
+    private static final String FIELD_STATE="t.state";
+    private static final String FIELD_SORT="t.sort";
 
     public StoreCtrl() {
         super(StoreService.class);
@@ -37,6 +37,7 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
 
     /**
      * 根据目标Record的state字段值(value)读取字典表得到state_text(name)
+     * 根据city/province复制一份city_text/province_text
      * @author CaryZ
      * @date 2018-11-07
      * @param record 目标record
@@ -49,6 +50,8 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
         }
         Record r= DictionaryConstants.DICT_RECORD_MAP.get(STATE).get(state);
         record.set("state_text",r.getStr("name"));
+        record.set("city_text",record.getStr("city"));
+        record.set("province_text",record.getStr("province"));
     }
 
     @Override
@@ -80,7 +83,7 @@ public class StoreCtrl extends BaseCtrl<StoreService> {
         String keyword=record.getStr("keyword");
         if (StringUtils.isNotEmpty(keyword)){
             String []keywords=new String[]{keyword,keyword,keyword,keyword};
-            record.set("$all$and_"+FIELD_PHONE+"$like$or_"+FIELD_NAME+"$like$or_"+FIELD_PINYIN+"$like$or_"+FIELD_ADDRESS+"$like$or",keywords);
+            record.set("$all$and#"+FIELD_PHONE+"$like$or#"+FIELD_NAME+"$like$or#"+FIELD_PINYIN+"$like$or#"+FIELD_ADDRESS+"$like$or",keywords);
             record.remove("keyword");
         }
         record.set("$sort"," ORDER BY "+FIELD_STATE+" DESC,"+FIELD_SORT+" ASC");

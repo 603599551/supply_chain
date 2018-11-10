@@ -127,6 +127,18 @@ public class StoreService extends BaseService {
     }
 
     /**
+     * 分页查询门店列表，关联查询地址表得到省份
+     * @param record 查询条件，key是字段名，value不为空将被作为条件查询
+     * @param pageNum 页码数
+     * @param pageSize 每页都少条数据
+     * @return
+     * @throws PcException
+     */
+    @Override
+    public Page<Record> query(Record record, int pageNum, int pageSize) throws PcException{
+        return addressService.query(record,TABLENAME,pageNum,pageSize);
+    }
+    /**
      * 该方法实现查询门店表中所有门店
      * @author CaryZ
      * @date 2018-11-09

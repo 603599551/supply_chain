@@ -20,9 +20,9 @@ import static com.constants.DictionaryConstants.WAREHOUSE_TYPE;
  */
 public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
 
-    private static final String FIELD_NUM="num";
-    private static final String FIELD_PINYIN="pinyin";
-    private static final String FIELD_NAME="name";
+    private static final String FIELD_NUM="t.num";
+    private static final String FIELD_PINYIN="t.pinyin";
+    private static final String FIELD_NAME="t.name";
 
     public WarehouseCtrl() {
         super(WarehouseService.class);
@@ -30,6 +30,7 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
 
     /**
      * 根据目标Record的state、type字段值(value)读取字典表得到state_text、type_text(name)
+     * 根据city/province复制一份city_text/province_text
      * @author CaryZ
      * @date 2018-11-06
      * @param record 目标record
@@ -48,6 +49,8 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
         }
         Record r2= DictionaryConstants.DICT_RECORD_MAP.get(WAREHOUSE_TYPE).get(type);
         record.set("type_text",r2.getStr("name"));
+        record.set("city_text",record.getStr("city"));
+        record.set("province_text",record.getStr("province"));
     }
 
     @Override
@@ -77,7 +80,7 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
         String keyword=record.getStr("keyword");
         if (StringUtils.isNotEmpty(keyword)){
             String []keywords=new String[]{keyword,keyword,keyword};
-            record.set("$all$and_"+FIELD_NUM+"$like$or_"+FIELD_PINYIN+"$like$or_"+FIELD_NAME+"$like$or",keywords);
+            record.set("$all$and#"+FIELD_NUM+"$like$or#"+FIELD_PINYIN+"$like$or#"+FIELD_NAME+"$like$or",keywords);
             record.remove("keyword");
         }
         record.set("$sort"," ORDER BY state DESC,num ASC");

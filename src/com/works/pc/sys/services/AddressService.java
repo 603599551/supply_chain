@@ -12,7 +12,10 @@ import com.utils.DateUtil;
 import com.utils.HanyuPinyinHelper;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -161,5 +164,40 @@ public class AddressService extends BaseService {
         String address= StringUtils.substringAfter(rawAddress,"市");
         record.set("address",address);
         return record;
+    }
+
+    /**
+     * 分页查询门店/仓库/供应商列表，同时根据地址id在地址表中查出省份
+     * @param record 查询条件，key是字段名，value不为空将被作为条件查询
+     * @param tableName 门店/仓库/供应商表
+     * @param pageNum 页码数
+     * @param pageSize 每页都少条数据
+     * @return
+     * @throws PcException
+     */
+    public Page<Record> query(Record record,String tableName, int pageNum, int pageSize) throws PcException {
+        Map <String,Object> allParaMap=record.getColumns();
+        Map <String,Object> newParaMap=new HashMap<>();
+        List<String> keys=new ArrayList<>();
+        for (Map.Entry<String,Object> entry:allParaMap.entrySet()){
+            if (!entry.getKey().startsWith("$")) {
+                newParaMap.put("t." + entry.getKey(), entry.getValue());
+                keys.add(entry.getKey());
+            }else {
+                newParaMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+        Record newRecord=new Record();
+        newRecord.setColumns(newParaMap);
+        StringBuilder select = new StringBuilder("SELECT t.*,a.province ");
+        StringBuilder from = new StringBuilder(" FROM "+TABLENAME+" a,"+tableName+" t WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        from.append(" AND a.id=t.address_id ");
+        from.append(createWhereSql(newRecord, params,false));
+        if(params != null && params.size() > 0){
+            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
+        }else{
+            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
+        }
     }
 }
