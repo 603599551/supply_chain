@@ -295,4 +295,28 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
         }
         renderJson(jhm);
     }
+
+    /**
+     * 修改启用停用接口
+     */
+    public void updateState(){
+        JsonHashMap jhm = new JsonHashMap();
+        String id = getPara("id");
+        String state = getPara("state");
+        Record record = new Record();
+        record.set("id", id);
+        record.set("state", state);
+        try {
+            boolean flag = service.updateById(record);
+            if(flag){
+                jhm.putMessage("修改状态成功！");
+            }else{
+                jhm.putFail("修改状态失败！");
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putFail(e.getMsg());
+        }
+        renderJson(jhm);
+    }
 }
