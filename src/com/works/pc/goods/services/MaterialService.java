@@ -36,7 +36,7 @@ public class MaterialService extends BaseService {
      }
 
     /**
-     * 根据盘点项JSON数组的ids查询material数据
+     * 根据盘点项JSON数组查询material数据
      * @author CaryZ
      * @date 2018-11-08
      * @param countItems 盘点项JSON数组
@@ -44,16 +44,21 @@ public class MaterialService extends BaseService {
      */
     public List<Record> queryMaterials(JSONArray countItems){
         int countLen=countItems.size();
-        List<String> idList=new ArrayList<>(countLen);
-        StringBuffer sql=new StringBuffer("SELECT * FROM s_material WHERE id IN(");
+        String[] ids=new String[countLen];
         for (int i=0;i<countLen;i++){
-            idList.add(countItems.getJSONObject(i).getString("id"));
-            if (i==countLen-1){
-                sql.append("?)");
-            }else {
-                sql.append("?,");
-            }
+            ids[i]=countItems.getJSONObject(i).getString("id");
         }
-        return Db.find(sql.toString(),idList.toArray());
+        return queryMaterials(ids);
+    }
+
+    /**
+     * 根据ids查询material数据
+     * @author CaryZ
+     * @date 2018-11-08
+     * @param ids 盘点项ids
+     * @return materialList
+     */
+    public List<Record> queryMaterials(String... ids){
+        return super.selectByColumnIn("id",ids);
     }
 }
