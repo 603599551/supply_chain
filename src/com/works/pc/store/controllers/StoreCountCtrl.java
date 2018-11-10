@@ -37,7 +37,7 @@ public class StoreCountCtrl extends BaseCtrl<StoreCountService> {
     @Override
     public void handleAddRecord(Record record) {
         record.set("num",getStoreCountOrderNumber());
-        record.set("state", 1);
+        record.set("state", "1");
         record.set("count_date", DateUtil.GetDate());
         record.set("store_id",usu.getUserBean().get("store_id"));
         record.set("store_color", usu.getUserBean().get("store_color"));

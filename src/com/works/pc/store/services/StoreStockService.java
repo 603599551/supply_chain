@@ -81,13 +81,13 @@ public class StoreStockService extends BaseService {
         sql.append(" AND store_id=?");
         int itemLen=itemList.size();
         //将itemList中的id单独提出来
-        List<String> ids=new ArrayList<>();
+        String[]ids=new String[itemLen+1];
         for (int i=0;i<itemLen;i++){
-            ids.add(itemList.get(i).getStr("id"));
+            ids[i]=itemList.get(i).getStr("id");
         }
-        ids.add(record.getStr("store_id"));
+        ids[itemLen]=record.getStr("store_id");
         //该店已存在的库存信息
-        List<Record> stockList= Db.find(sql.toString(),ids.toArray());
+        List<Record> stockList= Db.find(sql.toString(),ids);
         //根据盘点项查询出来的原料信息List
         List<Record> materialList=materialService.queryMaterials(countItems);
         //要新增的库存信息
