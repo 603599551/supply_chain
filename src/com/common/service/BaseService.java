@@ -167,7 +167,7 @@ public abstract class BaseService implements KEY, Sql{
      * @param params 参数
      * @return
      */
-    private StringBuilder createWhereSql(Record record, List<Object> params) throws PcException{
+    protected StringBuilder createWhereSql(Record record, List<Object> params) throws PcException{
         StringBuilder result = new StringBuilder("");
         if(record != null){
             Record recordEntry = getRecord(record);
