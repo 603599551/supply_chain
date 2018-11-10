@@ -175,10 +175,17 @@ public abstract class BaseService implements KEY, Sql{
             Map<String, Object> entryColumns = recordEntry.getColumns();
             for(Map.Entry<String, Object> entry : entryColumns.entrySet()){
                 if(entry.getValue() != null){
+                    if (!flag&&entry.getKey().startsWith("$")){
+                        continue;
+                    }
                     if(entry.getValue() instanceof String){
                         String value = (String)entry.getValue();
                         if(value.length() > 0){
-                            result.append(" and `" + entry.getKey() + "`=? ");
+                            if (!flag){
+                                result.append(" and " + entry.getKey() + "=? ");
+                            }else {
+                                result.append(" and `" + entry.getKey() + "`=? ");
+                            }
                             params.add(entry.getValue());
                         }
                     }
@@ -188,7 +195,11 @@ public abstract class BaseService implements KEY, Sql{
             for(Map.Entry<String, Object> entry : columns.entrySet()){
                 if(entry.getValue() != null){
                     if(entry.getKey().startsWith("$like#")){
-                        result.append(" and `" + entry.getKey().replace("$like#", "") + "` like ? ");
+                        if (!flag){
+                            result.append(" and " + entry.getKey().replace("$like#", "") + " like ? ");
+                        }else {
+                            result.append(" and `" + entry.getKey().replace("$like#", "") + "` like ? ");
+                        }
                         params.add("%" + entry.getValue() + "%");
                     }else if (entry.getKey().startsWith("$all")){
                         String start = entry.getKey().split("#")[0];
@@ -212,9 +223,18 @@ public abstract class BaseService implements KEY, Sql{
                                     oneTerm[2]="";
                                 }
                                 if("like".equals(oneTerm[1])){
-                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like CONCAT('%',?,'%') ");
+                                    if (!flag){
+                                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + " like CONCAT('%',?,'%') ");
+                                    }else {
+                                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like CONCAT('%',?,'%') ");
+                                    }
+
                                 }else if("eq".equals(oneTerm[1])){
-                                    sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
+                                    if (!flag){
+                                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + "=? ");
+                                    }else {
+                                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
+                                    }
                                 }else{
                                     throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
                                 }
