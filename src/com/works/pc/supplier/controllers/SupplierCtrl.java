@@ -1,11 +1,14 @@
 package com.works.pc.supplier.controllers;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.common.controllers.BaseCtrl;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.sun.prism.impl.packrect.RectanglePacker;
+import com.utils.BeanUtils;
 import com.utils.DateUtil;
 import com.utils.HanyuPinyinHelper;
 import com.utils.JsonHashMap;
@@ -28,6 +31,7 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
     private static final String FIELD_PINYIN="t.pinyin";
     private static final String FIELD_NAME="t.name";
     private static final String FIELD_ADDRESS="t.address";
+    private static final String FIELD_STATE="t.state";
 
     public SupplierCtrl() {
         super(SupplierService.class);
@@ -83,6 +87,57 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
             record.set("$all$and#"+FIELD_NUM+"$like$or#"+FIELD_PINYIN+"$like$or#"+FIELD_NAME+"$like$or#"+FIELD_ADDRESS+"$like$or",keywords);
             record.remove("keyword");
         }
-        record.set("$sort"," ORDER BY state DESC,num ASC");
+        record.set("$sort"," ORDER BY "+FIELD_STATE+" DESC,"+FIELD_NUM+" ASC");
     }
+
+    /**
+     * 新增供应商信息
+     * @author CaryZ
+     * @date 2018-11-09
+     */
+    @Override
+    public void add(){
+        JsonHashMap jhm = new JsonHashMap();
+        JSONObject json = getJson(getRequest());
+        Record record = BeanUtils.jsonToRecord(json);
+        try {
+            handleAddRecord(record);
+            String id = service.add(record);
+            if(id != null){
+                jhm.putMessage("添加成功！");
+            }else{
+                jhm.putFail("添加失败！");
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putError(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
+    /**
+     * 修改供应商信息
+     * @author CaryZ
+     * @date 2018-11-11
+     */
+    @Override
+    public void updateById(){
+        JsonHashMap jhm = new JsonHashMap();
+        JSONObject json = getJson(getRequest());
+        Record record = BeanUtils.jsonToRecord(json);
+        try {
+            handleUpdateRecord(record);
+            boolean flag = service.updateById(record);
+            if(flag){
+                jhm.putMessage("修改成功！");
+            }else{
+                jhm.putFail("修改失败！");
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putError(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
 }

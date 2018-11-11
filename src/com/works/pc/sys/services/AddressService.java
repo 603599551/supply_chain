@@ -124,6 +124,7 @@ public class AddressService extends BaseService {
         //当地址有变动或状态改变时
         if (!StringUtils.equals(address,oldAddress)||!StringUtils.equals(state,oldState)){
             record.set("city",city);
+            record.set("address",address);
             if (!this.isExist(record)){
                 return false;
             }

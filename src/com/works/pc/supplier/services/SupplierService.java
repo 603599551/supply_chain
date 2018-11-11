@@ -1,5 +1,7 @@
 package com.works.pc.supplier.services;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
@@ -67,6 +69,11 @@ public class SupplierService extends BaseService {
         if (!addressService.isExist(record)){
             return null;
         }
+        System.out.println(record.getStr("material_items"));
+        JSONArray jsonArray=JSONArray.parseArray(record.getStr("material_items"));
+        Map<String,JSONArray> map=new HashMap(1);
+        map.put("items",jsonArray);
+        record.set("material_items", JSON.toJSONString(map));
         record.remove("province");
         return super.add(record);
     }
@@ -117,6 +124,10 @@ public class SupplierService extends BaseService {
         if (!addressService.updateMessage(record,oldSupplier,true)){
             return false;
         };
+        JSONArray jsonArray=JSONArray.parseArray(record.getStr("material_items"));
+        Map<String,JSONArray> map=new HashMap(1);
+        map.put("items",jsonArray);
+        record.set("material_items", JSON.toJSONString(map));
         record.set("updatedate",DateUtil.GetDateTime());
         return super.updateById(record);
     }
