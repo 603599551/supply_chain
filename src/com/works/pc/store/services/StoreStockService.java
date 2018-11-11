@@ -121,7 +121,7 @@ public class StoreStockService extends BaseService {
         int itemLen=itemList.size();
         int materialLen=materialList.size();
         List<Record> removeList=new ArrayList<>();
-        Map itemMap=new HashMap(itemLen);
+        Map<String,Record> itemMap=new HashMap(itemLen);
         //itemList转map key存id，value存JSONObject
         for (int j=0;j<itemLen;j++){
             itemMap.put(itemList.get(j).getStr("id"),itemList.get(j));
@@ -147,7 +147,7 @@ public class StoreStockService extends BaseService {
         //往已存在的库存记录更新原料信息
         int updateAddLen=updateList.size();
         if (updateAddLen>0){
-            Map materialMap=new HashMap(materialLen);
+            Map<String,Record> materialMap=new HashMap(materialLen);
             for (int j=0;j<materialLen;j++){
                 materialMap.put(materialList.get(j).getStr("id"),materialList.get(j));
             }
@@ -180,7 +180,7 @@ public class StoreStockService extends BaseService {
     public boolean batchSave(Record record,List<Record> addList,List<Record> itemAddList,List<Record> materialList)throws PcException{
         String materialId="",currentQuantity="";
         int materialLen=materialList.size();
-        Map materialMap=new HashMap(materialLen);
+        Map<String,Record> materialMap=new HashMap(materialLen);
         for (int j=0;j<materialLen;j++){
             materialMap.put(materialList.get(j).getStr("id"),materialList.get(j));
         }

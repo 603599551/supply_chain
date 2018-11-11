@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.exception.PcException;
+import com.jfinal.json.Json;
 import com.utils.BeanUtils;
 import com.works.pc.goods.services.MaterialService;
 //import net.sf.json.JSONArray;
@@ -82,7 +83,7 @@ public class StoreCountService extends BaseService {
         int countLen=countItems.size();
         List<Record> materialList=materialService.queryMaterials(countItems);
         int materialLen=materialList.size();
-        Map materialMap=new HashMap(materialLen);
+        Map<String,JSONObject> materialMap=new HashMap(materialLen);
         //materialList转map key存id，value存JSONObject
         for (int j=0;j<materialLen;j++){
             materialMap.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
@@ -96,7 +97,7 @@ public class StoreCountService extends BaseService {
             }
         }
         JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(materialList));
-        Map map=new HashMap(1);
+        Map<String,JSONArray> map=new HashMap(1);
         map.put("items",jsonArray);
         record.set("sort",super.getCurrentSort()+1);
         record.set("count_item",JSON.toJSONString(map));
