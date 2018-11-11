@@ -43,7 +43,7 @@ public class CatalogService extends BaseService {
      * 通过type查询s_catelog表生成一个分类树
      * @author CaryZ
      * @date 2018-11-06
-     * @param type 区别原料和商品类型 0:原料 1:商品
+     * @param type 区别原料和商品类型 material:原料 product:商品
      * @return record 分类树
      */
     public Record queryCategoryTree(String type) throws PcException{
@@ -53,6 +53,12 @@ public class CatalogService extends BaseService {
         root.set("id","0");
         BeanUtils.createTree(root,super.list(typeRecord));
         return root;
+    }
+
+    @Override
+    public String add(Record record) throws PcException{
+        record.set("sort",getCurrentSort("WHERE parent_id='"+record.getStr("parent_id")+"'")+10);
+        return super.add(record);
     }
 
 }

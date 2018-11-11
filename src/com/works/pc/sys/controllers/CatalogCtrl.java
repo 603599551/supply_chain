@@ -41,7 +41,7 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
     }
 
     /**
-     * 通过type(0:原料 1:商品)查询s_catelog表生成一个分类树
+     * 通过type(material:原料 product:商品)查询s_catelog表生成一个分类树
      * @author CaryZ
      * @date 2018-11-06
      */
