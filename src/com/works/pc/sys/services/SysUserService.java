@@ -2,10 +2,13 @@ package com.works.pc.sys.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SysUserService extends BaseService {
 
@@ -24,6 +27,23 @@ public class SysUserService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        SysRolesService sysRolesService = enhance(SysRolesService.class);
+        try {
+            List<Record> sysRoleList = sysRolesService.list(null);
+            if(sysRoleList != null && sysRoleList.size() > 0){
+                Map<String, String> sysRoleIdNameMap = new HashMap<>();
+                for(Record r : sysRoleList){
+                    sysRoleIdNameMap.put(r.getStr("id"), r.getStr("name"));
+                }
+                if(page != null && page.getList() != null && page.getList().size() > 0){
+                    for(Record pageRecord : page.getList()){
+                        pageRecord.set("role_text", sysRoleIdNameMap.get(pageRecord.getStr("role_id")));
+                    }
+                }
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+        }
         return page;
      }
 
