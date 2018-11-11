@@ -52,11 +52,16 @@
             console.log(valueArr);
             var data = {};
             console.log(data);
-            for(var i = 0; i < keyArr.length; i++){
-                var k = keyArr[i];
-                var v = valueArr[i];
-                data[k] = v;
+            if($("#value").val() != null && $("#value").val().length > 0){
+                for(var i = 0; i < keyArr.length; i++){
+                    var k = keyArr[i];
+                    var v = valueArr[i];
+                    data[k] = v;
+                }
+            }else{
+                data = $("#key").val();
             }
+
             $.ajax({
                 url : url,
                 type : type,
