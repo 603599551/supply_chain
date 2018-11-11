@@ -178,6 +178,7 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
             handleRecord(record);
             jhm.putSuccess(record);
         } catch (Exception e){
+            e.printStackTrace();
             jhm.putFail(e.getMessage());
         }
         renderJson(jhm);

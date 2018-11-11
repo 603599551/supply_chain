@@ -6,6 +6,7 @@ import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.BeanUtils;
 import com.utils.DateUtil;
 import com.utils.UUIDTool;
 
@@ -25,12 +26,18 @@ public class SysRolesService extends BaseService {
     }
 
     @Override
-    public Record findById(String id) throws PcException{
+    public Record findById(String id) throws PcException {
         Record result = super.findById(id);
-        Record record = new Record();
-        record.set("role_id", id);
-        List<Record> menuList = sysAuthService.list(record);
+        if(result == null){
+            throw new PcException(SELECT_EXCEPTION, "没有查到数据！");
+        }
+        String selectSql = "select * from s_sys_auth sa, s_sys_menu sm where sa.menu_id=sm.id and sa.role_id=?";
+        List<Record> menuList = Db.find(selectSql, id);
         if(menuList != null && menuList.size() > 0){
+            Record root = new Record();
+            root.set("id", "0");
+            BeanUtils.createTree(root, menuList);
+            result.set("auth_tree", root);
             List<String> menuIdList = new ArrayList<>(menuList.size());
             for(Record r : menuList){
                 menuIdList.add(r.get("menu_id"));
