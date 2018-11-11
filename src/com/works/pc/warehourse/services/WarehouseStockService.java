@@ -47,58 +47,53 @@ public class WarehouseStockService extends BaseService {
      }
 
     /**
-     * 根据盘点项JSON数组的原料ids查询库存信息
-     * 若不存在，则批量新增该项的库存记录
-     * 若存在，则批量更新库存数量和原料信息
-     * 先更新已存在的库存信息，再新增信息
+     * 根据盘点项JSON数组的仓库库存id更新库存信息
+     *  "count_item":[
+     *              {
+     *                  "id":"原料id",
+     *                  "stock_id":"仓库库存记录id",
+     *                  "batch_num":"仓库原料批号",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
+     *              },
+     *              {
+     *                  "id":"原料id",
+     *                  "stock_id":"仓库库存记录id",
+     *                  "batch_num":"仓库原料批号",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
+     *              }
+     *          ]
      * @author CaryZ
-     * @date 2018-11-09
+     * @date 2018-11-11
      * @param record 新增盘点信息
+     * @param countItems 盘点项JSON数组
+     * @param materialMap key存id，value存JSONObject
      * @return 更新库存信息成功/失败 true/false
      * @throws PcException
      */
-    public boolean batchHandle(Record record,JSONArray countItems) throws PcException{
-        MaterialService materialService=super.enhance(MaterialService.class);
+    public boolean batchHandle(Record record,JSONArray countItems,Map materialMap) throws PcException{
         int countLen=countItems.size();
         //本次盘点项JSON转成的List<Record>
         List<Record> itemList=new ArrayList<>(countLen);
-        //盘点项中需要新增的库存信息
-        List<Record> itemAddList=new ArrayList<>(countLen);
-
-        StringBuffer sql=new StringBuffer("SELECT id,material_id FROM "+TABLENAME+" WHERE material_id IN(");
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
-            itemList.add(countItem);
-            itemAddList.add(countItem);
-            if (i==countLen-1){
-                sql.append("?)");
-            }else {
-                sql.append("?,");
+            if (materialMap.get(countItem.getStr("id"))!=null){
+                countItem.set("material_data",materialMap.get(countItem.getStr("id")).toString());
             }
+            countItem.set("id",countItem.getStr("stock_id"));
+            countItem.set("user_id",record.getStr("count_id"));
+            countItem.set("warehouse_id",record.getStr("warehouse_id"));
+            countItem.set("quantity",countItem.getStr("current_quantity"));
+            countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
+            itemList.add(countItem);
         }
-        sql.append(" AND "+WAREHOUSE_ID+"=?");
-        int itemLen=itemList.size();
-        //将itemList中的id单独提出来
-        String[]ids=new String[itemLen+1];
-        for (int i=0;i<itemLen;i++){
-            ids[i]=itemList.get(i).getStr("id");
-        }
-        ids[itemLen]=record.getStr(WAREHOUSE_ID);
-        //该店已存在的库存信息
-        List<Record> stockList= Db.find(sql.toString(),ids);
-        //根据盘点项查询出来的原料信息List
-        List<Record> materialList=materialService.queryMaterials(countItems);
-        //要新增的库存信息
-        List<Record> addList=new ArrayList<>();
-        //要更新的库存信息
-        List<Record> updateList=new ArrayList<>();
-
-        if (!batchUpdate(stockList,itemList,itemAddList,updateList,materialList)){
-            return false;
-        }
-
-        return batchSave(record,addList,itemAddList,materialList);
+        return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
     }
+
+
 
     /**
      * 批量更新门店原料库存信息
@@ -110,6 +105,7 @@ public class WarehouseStockService extends BaseService {
      * @Param itemAddList 盘点项中需要新增的库存信息
      * @Param updateList  要更新的库存信息
      * @Param materialList 盘点项涉及的原料信息
+     * @deprecated 业务逻辑发生变化 不再使用该方法
      */
     public boolean batchUpdate(List<Record> stockList,List<Record> itemList,List<Record> itemAddList,List<Record> updateList,List<Record> materialList) throws PcException{
         Record stock;
@@ -173,6 +169,7 @@ public class WarehouseStockService extends BaseService {
      * @Param addList  要新增的库存信息
      * @Param itemAddList 盘点项涉及要新增的库存信息
      * @Param materialList 盘点项涉及的原料信息
+     * @deprecated 业务逻辑发生变化 不再使用该方法
      */
     public boolean batchSave(Record record,List<Record> addList,List<Record> itemAddList,List<Record> materialList)throws PcException{
         String materialId="",currentQuantity="";
