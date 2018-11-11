@@ -189,7 +189,7 @@ public class AddressService extends BaseService {
         }
         Record newRecord=new Record();
         newRecord.setColumns(newParaMap);
-        StringBuilder select = new StringBuilder("SELECT t.*,a.province ");
+        StringBuilder select = new StringBuilder("SELECT t.*,a.province,a.address ");
         StringBuilder from = new StringBuilder(" FROM "+TABLENAME+" a,"+tableName+" t WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
         from.append(" AND a.id=t.address_id ");
@@ -200,4 +200,6 @@ public class AddressService extends BaseService {
             return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
         }
     }
+
+
 }

@@ -25,6 +25,7 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
     private static final String FIELD_NUM="t.num";
     private static final String FIELD_PINYIN="t.pinyin";
     private static final String FIELD_NAME="t.name";
+    private static final String FIELD_STATE="t.state";
 
     public WarehouseCtrl() {
         super(WarehouseService.class);
@@ -85,6 +86,6 @@ public class WarehouseCtrl extends BaseCtrl<WarehouseService> {
             record.set("$all$and#"+FIELD_NUM+"$like$or#"+FIELD_PINYIN+"$like$or#"+FIELD_NAME+"$like$or",keywords);
             record.remove("keyword");
         }
-        record.set("$sort"," ORDER BY state DESC,num ASC");
+        record.set("$sort"," ORDER BY "+FIELD_STATE+" DESC,"+FIELD_NUM+" ASC");
     }
 }
