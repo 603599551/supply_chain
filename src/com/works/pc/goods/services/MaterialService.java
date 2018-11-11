@@ -164,4 +164,17 @@ public class MaterialService extends BaseService {
         return root;
     }
 
+    /**
+     * 获取带有原料批号的分类原料树
+     * @return
+     */
+    public Record getBatchNumTree(){
+        Record root=getMaterialTree();
+        List<Record> materialList=Db.find("select m.*, m.catalog_id catalog_pid,m.id catalog_cid from s_material m where m.state=?", 1);
+        List<Record> stockList=Db.find("SELECT *,material_id catalog_pid,'' catalog_cid FROM s_warehouse_stock WHERE warehouse_id=?","999a561766b142349ca73f1cac54a18a");
+        List<Record> allList = new ArrayList<>(materialList);
+        allList.addAll(stockList);
+        BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
+        return root;
+    }
 }

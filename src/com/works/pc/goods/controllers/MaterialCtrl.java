@@ -93,4 +93,13 @@ public class MaterialCtrl extends BaseCtrl<MaterialService> {
         renderJson(jhm);
     }
 
+    /**
+     * 获取带有原料批号的分类原料树
+     */
+    public void getBatchNumTree(){
+        JsonHashMap jhm = new JsonHashMap();
+        Record root = service.getBatchNumTree();
+        jhm.putSuccess(root);
+        renderJson(jhm);
+    }
 }
