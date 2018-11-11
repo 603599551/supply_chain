@@ -25,10 +25,10 @@ public class SysMenuService extends BaseService {
     public List<Record> getTree(UserSessionUtil usu) {
         List<Record> list;
         if ("admin".equals(usu.getUsername())) {
-            list = Db.find("select id,name as title,ifnull(url,'') as link,parent_id,sort,icon as iconName from s_sys_menu order by sort");
+            list = Db.find("select id,name as title, name label, ifnull(url,'') as link,parent_id,sort,icon as iconName from s_sys_menu order by sort");
         } else {
             String jobId = usu.getUserBean().getRoleId();
-            list = Db.find("select m.id,m.name as title,ifnull(url,'') as link,m.parent_id,m.sort,m.icon as iconName,m.type from menu m,author_job_menu ajm where m.ID=ajm.menu_id and ajm.job_id=? and ajm.access='1' order by sort", jobId);
+            list = Db.find("select m.id,m.name as title,name label, ifnull(url,'') as link,m.parent_id,m.sort,m.icon as iconName,m.type from menu m,author_job_menu ajm where m.ID=ajm.menu_id and ajm.job_id=? and ajm.access='1' order by sort", jobId);
         }
         Record root = new Record();
         root.set("id", "0");
