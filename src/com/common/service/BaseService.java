@@ -285,7 +285,18 @@ public abstract class BaseService implements KEY, Sql{
      * @return
      */
     public synchronized int getCurrentSort(){
-        Record record=Db.findFirst("SELECT sort FROM "+this.tableName+" ORDER BY sort DESC LIMIT 1");
+        return getCurrentSort("");
+    }
+
+    /**
+     * 按照条件获取表中sort的最大数
+     * @author szsw
+     * @date 2018-11-11
+     * @param where 查询条件
+     * @return
+     */
+    public synchronized int getCurrentSort(String where){
+        Record record=Db.findFirst("SELECT sort FROM "+this.tableName+" " + where + " ORDER BY sort DESC LIMIT 1");
         return record==null? 0:record.getInt("sort");
     }
 
