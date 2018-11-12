@@ -9,9 +9,9 @@ import java.util.List;
 
 public class PurchasePurchasereturnProcessService extends BaseService {
 
-    private static String[] columnNameArr = {"id","purchase_id","num","handle_id","handle_date","purchase_type","remark","parent_id","to_user_id","state"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT"};
-    private static String[] columnCommentArr = {"","","","","","","","","",""};
+    private static String[] columnNameArr = {"id","purchase_id","num","handle_id","handle_date","purchase_type","remark","parent_id","to_user_id","state","item"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT"};
+    private static String[] columnCommentArr = {"","","","","","","","","","",""};
 
     public PurchasePurchasereturnProcessService() {
         super("s_purchase_purchasereturn_process", new TableBean("s_purchase_purchasereturn_process", columnNameArr, columnTypeArr, columnCommentArr));

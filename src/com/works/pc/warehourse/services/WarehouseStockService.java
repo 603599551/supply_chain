@@ -28,9 +28,9 @@ public class WarehouseStockService extends BaseService {
 
     private static final String TABLENAME="s_warehouse_stock";
     private static final String WAREHOUSE_ID="warehouse_id";
-    private static String[] columnNameArr = {"id","user_id","warehouse_id","state","quantity","batch_num","material_data","sort","material_id"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR"};
-    private static String[] columnCommentArr = {"","","","","","","","",""};
+    private static String[] columnNameArr = {"id","user_id","warehouse_id","state","quantity","batch_num","material_data","sort","material_id","purchase_order_id","purchase_order_num"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR"};
+    private static String[] columnCommentArr = {"","","","","","","","","","",""};
 
     public WarehouseStockService() {
         super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
