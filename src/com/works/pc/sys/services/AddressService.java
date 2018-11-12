@@ -10,6 +10,9 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
 import com.utils.HanyuPinyinHelper;
+import com.works.pc.store.services.StoreService;
+import com.works.pc.supplier.services.SupplierService;
+import com.works.pc.warehourse.services.WarehouseService;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -177,6 +180,10 @@ public class AddressService extends BaseService {
      * @throws PcException
      */
     public Page<Record> query(Record record,String tableName, int pageNum, int pageSize) throws PcException {
+        SupplierService supplierService=new SupplierService();
+        StoreService storeService=new StoreService();
+        WarehouseService warehouseService=new WarehouseService();
+
         Map <String,Object> allParaMap=record.getColumns();
         Map <String,Object> newParaMap=new HashMap<>();
         List<String> keys=new ArrayList<>();
@@ -196,10 +203,23 @@ public class AddressService extends BaseService {
         from.append(" AND a.id=t.address_id ");
         from.append(createWhereSql(newRecord, params,false));
         if(params != null && params.size() > 0){
-            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
+            if (StringUtils.equals(tableName,"s_supplier")){
+                return supplierService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
+            }else if (StringUtils.equals(tableName,"s_store")){
+                return storeService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
+            }else if (StringUtils.equals(tableName,"s_warehouse")){
+                return warehouseService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString(), params.toArray()));
+            }
         }else{
-            return queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
+            if (StringUtils.equals(tableName,"s_supplier")){
+                return supplierService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
+            }else if (StringUtils.equals(tableName,"s_store")){
+                return storeService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
+            }else if (StringUtils.equals(tableName,"s_warehouse")){
+                return warehouseService.queryBeforeReturn(Db.paginate(pageNum, pageSize, select.toString(), from.toString()));
+            }
         }
+        return null;
     }
 
 

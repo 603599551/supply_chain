@@ -2,6 +2,7 @@ package com.works.pc.supplier.services;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
@@ -48,6 +49,10 @@ public class SupplierService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list=page.getList();
+        for (Record r:list){
+            r.set("material_items", JSONObject.parseObject(r.getStr("material_items")));
+        }
         return page;
      }
 
