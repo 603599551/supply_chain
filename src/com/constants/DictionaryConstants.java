@@ -10,6 +10,8 @@ public class DictionaryConstants {
 
     //启用停用状态
     public static final String STATE = "state";
+    //原料商品类型
+    public static final String TYPE = "type";
     //仓库类型
     public static final String WAREHOUSE_TYPE = "warehouse_type";
     //储存条件
@@ -20,8 +22,10 @@ public class DictionaryConstants {
     public static final String ORDER_TYPE = "order_type";
     //采购类型
     public static final String PURCHASE_TYPE = "purchase_type";
-    //原料商品类型
-    public static final String TYPE = "type";
+    //采购单状态
+    public static final String PURCHASE_ORDER_TYPE = "purchase_order_type";
+    //采购流程状态
+    public static final String PURCHASE_PROCESS_TYPE = "purchase_process_type";
 
 
 
