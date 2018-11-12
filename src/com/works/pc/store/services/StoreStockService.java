@@ -31,7 +31,7 @@ public class StoreStockService extends BaseService {
     private static final String TABLENAME="s_store_stock";
     private static final String STORE_ID="store_id";
     private static String[] columnNameArr = {"id","store_id","state","quantity","batch_num","material_data","store_color","sort","material_id"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","INT","INT","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","",""};
 
     public StoreStockService() {

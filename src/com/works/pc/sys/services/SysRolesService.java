@@ -16,7 +16,7 @@ import java.util.List;
 public class SysRolesService extends BaseService {
 
     private static String[] columnNameArr = {"id", "name", "remark", "updatedate", "state"};
-    private static String[] columnTypeArr = {"VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "INT"};
+    private static String[] columnTypeArr = {"VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR"};
     private static String[] columnCommentArr = {"", "", "", "", ""};
 
     private SysAuthService sysAuthService = enhance(SysAuthService.class);

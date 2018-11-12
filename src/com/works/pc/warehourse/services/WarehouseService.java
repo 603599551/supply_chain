@@ -27,7 +27,7 @@ public class WarehouseService extends BaseService {
 
     private static final String TABLENAME="s_warehouse";
     private static String[] columnNameArr = {"id","address_id","num","name","city","state","remark","pinyin","type"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","",""};
 
     public WarehouseService() {

@@ -29,7 +29,7 @@ public class StoreService extends BaseService {
 
     private static final String TABLENAME="s_store";
     private static String[] columnNameArr = {"id","create_id","address_id","name","pinyin","city","address","phone","sort","updatedate","state","color","remark"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","INT","VARCHAR","VARCHAR"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","",""};
 
     public StoreService() {

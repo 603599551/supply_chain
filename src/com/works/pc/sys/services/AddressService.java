@@ -30,7 +30,7 @@ public class AddressService extends BaseService {
 
     private static final String TABLENAME="s_address";
     private static String[] columnNameArr = {"id","city","province","address","state"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","",""};
 
     public AddressService() {
