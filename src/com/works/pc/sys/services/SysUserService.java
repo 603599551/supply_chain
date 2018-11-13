@@ -3,6 +3,7 @@ package com.works.pc.sys.services;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 
@@ -47,4 +48,12 @@ public class SysUserService extends BaseService {
         return page;
      }
 
+    /**
+     * 根据角色名称得到属于该角色的所有可用用户
+     * @param name
+     * @return
+     */
+     public List<Record> getToUsers(String name){
+         return Db.find("SELECT id FROM s_sys_user WHERE id=(SELECT id FROM s_sys_roles WHERE name=?) AND state='1'",name);
+     }
 }
