@@ -10,6 +10,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
+import com.utils.HanyuPinyinHelper;
 import com.utils.StringUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.works.pc.purchase.services.PurchaseOrderService;
@@ -154,8 +155,14 @@ public class MaterialService extends BaseService {
      * @return
      */
     public Record getMaterialTree(){
-        List<Record> materialList = Db.find("select m.*, m.catalog_id catalog_pid, '' catalog_cid from s_material m where m.state=?", 1);
-        List<Record> catalogList = Db.find("select c.*, c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "material");
+        List<Record> materialList = Db.find("select m.*,CONCAT(m.name,'-',m.num,'-',m.pinyin) search_text,m.catalog_id catalog_pid, '' catalog_cid from s_material m where m.state=?", 1);
+        List<Record> catalogList = Db.find("select c.*,c.name search_text,c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "material");
+        if(catalogList != null && catalogList.size() > 0){
+            for(Record r : catalogList){
+                String searchText = r.get("search_text") + "-" + HanyuPinyinHelper.getFirstLettersLo(r.getStr("search_text"));
+                r.set("search_text", searchText);
+            }
+        }
         Record root = new Record();
         root.set("catalog_cid", "0");
         List<Record> allList = new ArrayList<>(materialList);

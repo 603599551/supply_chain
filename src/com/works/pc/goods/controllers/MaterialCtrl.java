@@ -54,8 +54,8 @@ public class MaterialCtrl extends BaseCtrl<MaterialService> {
     @Override
     public void createRecordBeforeSelect(Record record) {
         String keyword = getPara("keyword");
-        String key = "$all$and#name$like$or#pinyin$like$or";
-        String[] value = {keyword, keyword};
+        String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
+        String[] value = {keyword, keyword, keyword};
         record.set(key, value);
     }
 
