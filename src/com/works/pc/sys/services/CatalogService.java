@@ -4,6 +4,7 @@ import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
@@ -68,4 +69,14 @@ public class CatalogService extends BaseService {
         return super.add(record);
     }
 
+    /**
+     * 获取分类的所有二级记录
+     * @param type
+     * @return
+     */
+    public List<Record> getLevel2CatalogList(String type) throws PcException{
+        String sql = "select * from s_catalog where parent_id<>? and type=? order by sort";
+        List<Record> result = Db.find(sql, "0", type);
+        return result;
+    }
 }

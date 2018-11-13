@@ -210,7 +210,10 @@ public abstract class BaseCtrl<T extends BaseService> extends Controller impleme
      * key
      *      $all$or#name$like$or#pinyin$like$or#state$eq$and
      *      $sort
+     *      $in#and#column
      * value
+     *      array
+     *      sql string
      *      array
      * key
      *      all代表条件作为一个整体查询，or代表这个整体条件对外的逻辑关系，只允许为or/and

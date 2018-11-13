@@ -203,4 +203,31 @@ public class MaterialService extends BaseService {
         BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
         return root;
     }
+
+    /**
+     * 获取原料表中的所有单位
+     * @return
+     * @throws PcException
+     */
+    public List<Record> getMaterialUnit() throws PcException {
+        List<Record> result = new ArrayList<>();
+        List<Record> unitList = Db.find("SELECT DISTINCT M.MAX_UNIT MAX,M.MID_UNIT MID,M.MIN_UNIT MIN FROM S_MATERIAL M");
+        if(unitList != null && unitList.size() > 0){
+            Set<String> unitSet = new HashSet<>();
+            for(Record r : unitList){
+                unitSet.add(r.getStr("MAX"));
+                unitSet.add(r.getStr("MID"));
+                unitSet.add(r.getStr("MIN"));
+            }
+            for(String s : unitSet){
+                if(s != null && s.trim().length() > 0){
+                    Record record = new Record();
+                    record.set("name", s);
+                    record.set("value", s);
+                    result.add(record);
+                }
+            }
+        }
+        return result;
+    }
 }

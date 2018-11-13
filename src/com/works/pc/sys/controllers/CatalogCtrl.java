@@ -61,4 +61,21 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
         }
         renderJson(jhm);
     }
+
+    /**
+     * 获取分类的所有二级记录
+     */
+    public void getLevel2CatalogList(){
+        JsonHashMap jhm=new JsonHashMap();
+        String type = getPara("type");
+        try{
+            List<Record> catalogList = service.getLevel2CatalogList(type);
+            jhm.putSuccess(catalogList);
+        }catch (PcException e){
+            e.printStackTrace();
+            jhm.putError(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
 }
