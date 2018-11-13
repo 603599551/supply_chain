@@ -51,7 +51,14 @@ public class CatalogService extends BaseService {
         typeRecord.set("type",type);
         Record root=new Record();
         root.set("id","0");
-        BeanUtils.createTree(root,super.list(typeRecord));
+        //前端创建树需要showChildren字段，用于判断是否展开显示子节点
+        List<Record> catalogList = super.list(typeRecord);
+        if(catalogList != null && catalogList.size() > 0){
+            for(Record r : catalogList){
+                r.set("showChildren", false);
+            }
+        }
+        BeanUtils.createTree(root,catalogList);
         return root;
     }
 
