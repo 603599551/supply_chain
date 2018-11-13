@@ -3,6 +3,7 @@ package com.works.pc.goods.services;
 import com.alibaba.druid.util.StringUtils;
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
@@ -18,10 +19,7 @@ import com.works.pc.store.services.StoreStockService;
 import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.warehourse.services.WarehouseStockService;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Before(Tx.class)
 public class MaterialService extends BaseService {
@@ -163,12 +161,28 @@ public class MaterialService extends BaseService {
                 r.set("search_text", searchText);
             }
         }
+        if(materialList != null && materialList.size() > 0){
+            for(Record r : materialList){
+                handleRecord(r);
+            }
+        }
         Record root = new Record();
         root.set("catalog_cid", "0");
         List<Record> allList = new ArrayList<>(materialList);
         allList.addAll(catalogList);
         BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
         return root;
+    }
+
+    public void handleRecord(Record record) {
+        Map<String, String> storageCondition = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.STORAGE_CONDITION);
+        Map<String, String> shelfLifeUnit = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.SHELF_LIFE_UNIT);
+        Map<String, String> orderType = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.ORDER_TYPE);
+        Map<String, String> purchaseType = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.PURCHASE_TYPE);
+        record.set("storage_condition_text", storageCondition.get(record.getStr("storage_condition")));
+        record.set("shelf_life_unit_text", shelfLifeUnit.get(record.getStr("shelf_life_unit")));
+        record.set("order_type_text", orderType.get(record.getStr("order_type")));
+        record.set("type_text", purchaseType.get(record.getStr("type")));
     }
 
     /**
@@ -178,6 +192,11 @@ public class MaterialService extends BaseService {
     public Record getBatchNumTree(){
         Record root=getMaterialTree();
         List<Record> materialList=Db.find("select m.*, m.catalog_id catalog_pid,m.id catalog_cid from s_material m where m.state=?", 1);
+        if(materialList != null && materialList.size() > 0){
+            for(Record r : materialList){
+                handleRecord(r);
+            }
+        }
         List<Record> stockList=Db.find("SELECT *,material_id catalog_pid,'' catalog_cid FROM s_warehouse_stock WHERE warehouse_id=?","999a561766b142349ca73f1cac54a18a");
         List<Record> allList = new ArrayList<>(materialList);
         allList.addAll(stockList);

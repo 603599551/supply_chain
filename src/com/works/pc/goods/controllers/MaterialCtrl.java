@@ -20,14 +20,7 @@ public class MaterialCtrl extends BaseCtrl<MaterialService> {
 
     @Override
     public void handleRecord(Record record) {
-        Map<String, String> storageCondition = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.STORAGE_CONDITION);
-        Map<String, String> shelfLifeUnit = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.SHELF_LIFE_UNIT);
-        Map<String, String> orderType = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.ORDER_TYPE);
-        Map<String, String> purchaseType = DictionaryConstants.DICT_STRING_MAP.get(DictionaryConstants.PURCHASE_TYPE);
-        record.set("storage_condition_text", storageCondition.get(record.getStr("storage_condition")));
-        record.set("shelf_life_unit_text", shelfLifeUnit.get(record.getStr("shelf_life_unit")));
-        record.set("order_type_text", orderType.get(record.getStr("order_type")));
-        record.set("type_text", purchaseType.get(record.getStr("type")));
+        service.handleRecord(record);
     }
 
     @Override
