@@ -245,6 +245,20 @@ public abstract class BaseService implements KEY, Sql{
                         }
                         sql.append(")");
                         result.append(sql);
+                    }else if(entry.getKey().startsWith("$in")){
+                        String[] valueArr = (String[]) entry.getValue();
+                        if(valueArr != null && valueArr.length > 0){
+                            //$in#and#column
+                            String[] keyArr = entry.getKey().split("#");
+                            String sql = keyArr[1] + " " + keyArr[2] + " in({{wildcard}})";
+                            String wildcard = "";
+                            for(String s : valueArr){
+                                wildcard += "?,";
+                                params.add(s);
+                            }
+                            wildcard = wildcard.substring(0, wildcard.length() - 1);
+                            result.append(sql.replace("{{wildcard}}", wildcard));
+                        }
                     }
                 }
             }
