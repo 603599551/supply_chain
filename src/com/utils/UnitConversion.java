@@ -46,6 +46,28 @@ public class UnitConversion {
 
     /**
      * 将提货单位的数量，换算成最小单位的数量
+     * 从record中取出如下数据：num,min_unit,mid_unit,min2mid_num,max_unit,mid2max_num,out_unit
+     * @param r
+     * @return
+     */
+    public static int outUnit2SmallUnit(Record r) {
+        String out_unit = r.getStr("out_unit");//出库单位
+        String max_unit = r.getStr("max_unit");//大单位
+        Object boxAttrNumObj = r.get("mid2max_num");//大单位换算成箱的数值
+        String mid_unit = r.getStr("mid_unit");//大单位
+        String min_unit = r.getStr("min_unit");//最小单位
+        Object unitNumObj = r.getStr("min2mid_num");//小单位换算成大单位的数值
+        Object numObj = r.getStr("quantity");//要换算的数量（提货单位）
+
+        int mid2max_num = NumberUtils.parseInt(boxAttrNumObj, 0);
+        int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
+        int num=NumberUtils.parseInt(numObj, 0);
+
+        return outUnit2SmallUnit(num,min_unit,mid_unit, min2mid_num, max_unit,mid2max_num, out_unit);
+    }
+
+    /**
+     * 将提货单位的数量，换算成最小单位的数量
      * 如果提货单位是大单位，那么提货单位换算成最小单位的公式是：num*min2mid_num*mid2max_num
      * 如果提货单位是大单位，那么提货单位换算成最小单位的公式是：num*min2mid_num
      *
