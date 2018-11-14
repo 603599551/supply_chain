@@ -32,6 +32,10 @@ public class WarehouseCountService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list =page.getList();
+        for (Record r:list){
+            r.set("count_item",JSONObject.parseObject(r.getStr("count_item")));
+        }
         return page;
      }
 

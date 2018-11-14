@@ -1,6 +1,7 @@
 package com.works.pc.warehourse.services;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.exception.PcException;
@@ -11,6 +12,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
 import com.utils.UUIDTool;
+import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
 
 import java.util.ArrayList;
@@ -43,6 +45,10 @@ public class WarehouseStockService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list=page.getList();
+        for (Record r:list){
+            r.set("material_data", JSONObject.parseObject(r.getStr("material_data")));
+        }
         return page;
      }
 
@@ -74,23 +80,45 @@ public class WarehouseStockService extends BaseService {
      * @return 更新库存信息成功/失败 true/false
      * @throws PcException
      */
-    public boolean batchHandle(Record record,JSONArray countItems,Map materialMap) throws PcException{
+    public boolean batchHandle(Record record,JSONArray countItems,Map<String,Record> materialMap) throws PcException{
         int countLen=countItems.size();
         //本次盘点项JSON转成的List<Record>
         List<Record> itemList=new ArrayList<>(countLen);
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
-            if (materialMap.get(countItem.getStr("id"))!=null){
-                countItem.set("material_data",materialMap.get(countItem.getStr("id")).toString());
-            }
+            Record materialR=materialMap.get(countItem.getStr("id"));
+            countItem.set("material_data",materialR.toString());
             countItem.set("id",countItem.getStr("stock_id"));
             countItem.set("user_id",record.getStr("count_id"));
             countItem.set("warehouse_id",record.getStr("warehouse_id"));
-            countItem.set("quantity",countItem.getStr("current_quantity"));
+            //此步是为了便于调用outUnit2SmallUnit函数
+            materialR.set("quantity",countItem.getStr("current_quantity"));
+            countItem.set("quantity", UnitConversion.outUnit2SmallUnit(materialR));
             countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
             itemList.add(countItem);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
+    }
+
+    /**
+     * 批量新增门店原料库存信息
+     * @author CaryZ
+     * @date 2018-11-13
+     * @param addStockList 新增库存信息
+     * @return 更新成功/失败 返true/false
+     */
+    public boolean batchSave(List<Record> addStockList)throws PcException{
+        int sort=getCurrentSort();
+        for (Record record:addStockList){
+            sort++;
+            record.set("sort",sort);
+        }
+        try{
+            return Db.batchSave(TABLENAME,addStockList,addStockList.size())==null? false:true;
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            throw new PcException(ADD_EXCEPTION,e.getMessage());
+        }
     }
 
 
@@ -159,6 +187,8 @@ public class WarehouseStockService extends BaseService {
         }
         return true;
     }
+
+
 
     /**
      * 批量新增门店原料库存信息
