@@ -9,6 +9,12 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
+import com.works.pc.goods.services.MaterialService;
+import com.works.pc.goods.services.ProductService;
+import com.works.pc.purchase.services.PurchaseOrderService;
+import com.works.pc.store.services.StoreStockService;
+import com.works.pc.supplier.services.SupplierService;
+import com.works.pc.warehourse.services.WarehouseStockService;
 
 import java.util.List;
 
@@ -78,5 +84,48 @@ public class CatalogService extends BaseService {
         String sql = "select * from s_catalog where parent_id<>? and type=? order by sort";
         List<Record> result = Db.find(sql, "0", type);
         return result;
+    }
+
+    /**
+     * 通过id删除catalog
+     * @param id
+     * @return 删除数量
+     * @throws PcException
+     */
+    public int deleteById(String id) throws PcException {
+        String tableName = getCannotRecordList(id);
+        if(tableName == null){
+            return super.delete(id);
+        }else{
+            throw new PcException(APP_DELETE_EXCEPTION, "该分类被" + tableName + "占用，不能删除！");
+        }
+    }
+
+    /**
+     * 获取不能删除的分类数据
+     * 判断以下表中数据是否用到了当前分类或者当前分类下是否仍有子类/商品原料
+     * 1.分类表
+     * 2.原料表
+     * 3.商品表
+     * @param id 分类id
+     * @return
+     */
+    private String getCannotRecordList(String id){
+        CatalogService catalogService=enhance(CatalogService.class);
+        MaterialService materialService=enhance(MaterialService.class);
+        ProductService productService=enhance(ProductService.class);
+        List<Record> catalogList=catalogService.selectByColumnIn("parent_id",id);
+        if(catalogList != null && catalogList.size() > 0){
+            return "分类";
+        }
+        List<Record> materialList=materialService.selectByColumnIn("catalog_id",id);
+        if(materialList != null && materialList.size() > 0){
+            return "原料";
+        }
+        List<Record> productList=productService.selectByColumnIn("catalog_id",id);
+        if(productList != null && productList.size() > 0){
+            return "商品";
+        }
+        return null;
     }
 }

@@ -64,6 +64,8 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
 
     /**
      * 获取分类的所有二级记录
+     * @author CaryZ
+     * @date 2018-11-15
      */
     public void getLevel2CatalogList(){
         JsonHashMap jhm=new JsonHashMap();
@@ -78,4 +80,29 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
         renderJson(jhm);
     }
 
+    /**
+     * 取消批量删除接口
+     */
+    @Override
+    public void deleteByIds() {
+        return;
+    }
+
+    /**
+     * 通过id删除分类
+     * @author CaryZ
+     * @date 2018-11-15
+     */
+    public void deleteById(){
+        JsonHashMap jhm = new JsonHashMap();
+        String id = getPara("id");
+        try {
+            service.deleteById(id);
+            jhm.putMessage("删除成功！");
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putMessage(e.getMsg());
+        }
+        renderJson(jhm);
+    }
 }
