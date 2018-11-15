@@ -262,6 +262,10 @@ public abstract class BaseService implements KEY, Sql{
                     }
                 }
             }
+            Object fromto=columns.get("$fromto");
+            if (fromto!=null){
+                result.append(fromto);
+            }
             Object sort=columns.get("$sort");
             if (sort!=null){
                 result.append(sort);
