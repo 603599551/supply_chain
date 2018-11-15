@@ -12,6 +12,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
 import com.utils.UUIDTool;
+import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
 import com.alibaba.fastjson.JSONArray;
 
@@ -49,6 +50,54 @@ public class StoreStockService extends BaseService {
      }
 
     /**
+     * 根据盘点项JSON数组的门店库存id更新库存信息
+     * 盘点项JSON格式如下：
+     * {
+     *     "count_item":[
+     *              {
+     *                  "id":"原料id",
+     *                  "stock_id":"门店库存记录id",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
+     *              },
+     *              {
+     *                  "id":"原料id",
+     *                  "stock_id":"门店库存记录id",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
+     *              }
+     *          ]
+     * }
+     * @author CaryZ
+     * @date 2018-11-15
+     * @param countItems 盘点项JSON数组
+     * @param materialMap key存id，value存JSONObject
+     * @return 更新库存信息成功/失败 true/false
+     * @throws PcException
+     */
+    public boolean batchHandle(JSONArray countItems,Map<String,Record> materialMap) throws PcException{
+        int countLen=countItems.size();
+        //要更新的库存信息
+        List<Record> itemList=new ArrayList<>(countLen);
+        for (int i=0;i<countLen;i++){
+            Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
+            Record materialR=materialMap.get(countItem.getStr("id"));
+            //门店入库，不需要更新material_data
+//            countItem.set("material_data",materialR.toString());
+            countItem.set("id",countItem.getStr("stock_id"));
+            //此步是为了便于调用outUnit2SmallUnit函数
+            materialR.set("quantity",countItem.getStr("current_quantity"));
+            countItem.set("quantity", UnitConversion.outUnit2SmallUnit(materialR));
+            countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
+            itemList.add(countItem);
+        }
+        return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
+    }
+
+    /**
+     * @deprecated 业务逻辑发生变化，弃用该方法
      * 根据盘点项JSON数组的原料ids查询库存信息
      * 若不存在，则批量新增该项的库存记录
      * 若存在，则批量更新库存数量和原料信息
@@ -59,7 +108,7 @@ public class StoreStockService extends BaseService {
      * @return 更新库存信息成功/失败 true/false
      * @throws PcException
      */
-    public boolean batchHandle(Record record,JSONArray countItems) throws PcException{
+    public boolean batchHandle1(Record record,JSONArray countItems) throws PcException{
         MaterialService materialService=super.enhance(MaterialService.class);
         int countLen=countItems.size();
         //本次盘点项JSON转成的List<Record>
@@ -103,6 +152,7 @@ public class StoreStockService extends BaseService {
     }
 
     /**
+     * @deprecated 业务逻辑发生变化，盘点的一定是库存里有的记录，因此弃用该方法
      * 批量更新门店原料库存信息
      * @author CaryZ
      * @date 2018-11-09
@@ -130,7 +180,7 @@ public class StoreStockService extends BaseService {
             stock=stockList.get(i);
             stockId=stock.getStr("id");
             materialId=stock.getStr("material_id");
-            Record item=(Record) itemMap.get(materialId);
+            Record item=itemMap.get(materialId);
             //若存在库存记录
             if (item!=null){
                 Record updatedStock=new Record();
@@ -154,9 +204,13 @@ public class StoreStockService extends BaseService {
             for (int i=0;i<updateAddLen;i++){
                 Record updatedStock=updateList.get(i);
                 materialId=updatedStock.getStr("material_id");
-                if (materialMap.get(materialId)!=null){
-                    updatedStock.set("material_data",materialMap.get(materialId).toString());
+                Record materialR=materialMap.get(materialId);
+                if (materialR!=null){
+                    updatedStock.set("material_data",materialR.toString());
                 }
+                //提货单位数量->最小单位数量
+                materialR.set("quantity",updatedStock.getStr("quantity"));
+                updatedStock.set("quantity",UnitConversion.outUnit2SmallUnit(materialR));
             }
             try{
                 return Db.batchUpdate(TABLENAME,"id",updateList,updateAddLen)==null? false:true;
@@ -168,6 +222,7 @@ public class StoreStockService extends BaseService {
     }
 
     /**
+     * @deprecated 业务逻辑发生变化，新增库存信息在门店接收入库时做
      * 批量新增门店原料库存信息
      * @author CaryZ
      * @date 2018-11-09
@@ -194,13 +249,16 @@ public class StoreStockService extends BaseService {
             addedStock.set("id", UUIDTool.getUUID());
             addedStock.set(STORE_ID, record.getStr(STORE_ID));
             addedStock.set("state", record.getStr("state"));
-            addedStock.set("quantity", currentQuantity);
             addedStock.set("sort", sort);  sort++;
             addedStock.set("material_id", materialId);
             addedStock.set("store_color", record.getStr("store_color"));
-            if (materialMap.get(materialId)!=null){
-                addedStock.set("material_data",materialMap.get(materialId).toString());
+            Record materialR=materialMap.get(materialId);
+            if (materialR!=null){
+                addedStock.set("material_data",materialR.toString());
             }
+            //提货单位数量->最小单位数量
+            materialR.set("quantity",currentQuantity);
+            addedStock.set("quantity", UnitConversion.outUnit2SmallUnit(materialR));
             addList.add(addedStock);
         }
         try{

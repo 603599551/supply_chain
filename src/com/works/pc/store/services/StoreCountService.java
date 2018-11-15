@@ -47,51 +47,62 @@ public class StoreCountService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list =page.getList();
+        for (Record r:list){
+            r.set("count_item",JSONObject.parseObject(r.getStr("count_item")));
+        }
         return page;
      }
 
     /**
      * 实现新增门店盘点单据功能，根据盘点项更新门店库存表
-     * 前端传盘点备注remark，盘点项JSON数组（原料id，2数量，1remark）,sort排序（最后要删掉该备注）
+     * 前端传盘点备注remark，盘点项JSON数组
      * 根据原料id对盘点项JSON数组里的元素补充原料信息
      * 盘点项JSON格式如下：
      * {
      *     "count_item":[
      *              {
      *                  "id":"原料id",
-     *                  "beforeQuantity":"盘点项之前的数量",
-     *                  "currentQuantity":"盘点项现在的数量",
-     *                  "itemRemark":"盘点项的备注"
+     *                  "stock_id":"门店库存记录id",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
      *              },
      *              {
      *                  "id":"原料id",
-     *                  "beforeQuantity":"盘点项之前的数量",
-     *                  "currentQuantity":"盘点项现在的数量",
-     *                  "itemRemark":"盘点项的备注"
+     *                  "stock_id":"门店库存记录id",
+     *                  "before_quantity":"盘点项之前的数量",
+     *                  "current_quantity":"盘点项现在的数量",
+     *                  "item_remark":"盘点项的备注"
      *              }
      *          ]
      * }
      * @param record 新增数据
+     * @param countItems 盘点项JSON数组
      * @return 新增成功返回record的id，否则返回null
      * @throws PcException
      */
     public String add(Record record,JSONArray countItems)throws PcException{
         MaterialService materialService=super.enhance(MaterialService.class);
         StoreStockService storeStockService=super.enhance(StoreStockService.class);
-        storeStockService.batchHandle(record,countItems);
         //将原料信息插入到相应的JSON元素中
         int countLen=countItems.size();
         List<Record> materialList=materialService.queryMaterials(countItems);
         int materialLen=materialList.size();
-        Map<String,JSONObject> materialMap=new HashMap(materialLen);
+        Map<String,JSONObject> materialMap1=new HashMap(materialLen);
+        Map<String,Record> materialMap2=new HashMap(materialLen);
         //materialList转map key存id，value存JSONObject
         for (int j=0;j<materialLen;j++){
-            materialMap.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
+            materialMap1.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
+            materialMap2.put(materialList.get(j).getStr("id"),materialList.get(j));
+        }
+        if (!storeStockService.batchHandle(countItems,materialMap2)){
+            return null;
         }
         JSONObject job;
         for (int i=0;i<countLen;i++){
             job=countItems.getJSONObject(i);
-            if (materialMap.get(job.getString("id"))!=null){
+            if (materialMap1.get(job.getString("id"))!=null){
                 materialList.get(i).setColumns(job);
                 break;
             }
