@@ -136,4 +136,32 @@ public class SupplierService extends BaseService {
         record.set("updatedate",DateUtil.GetDateTime());
         return super.updateById(record);
     }
+
+    /**
+     * 通过原料id查询供应商的material_ids是否包含该id
+     * 若包含则在list返回
+     * @param materialId 原料id
+     * @return 能提供该原料的供应商信息，包括供应商id和编号、名称、原料价格
+     */
+    public List<Record> querySupplierForMaterial(String materialId){
+        //找出能提供该原料的供应商
+        List<Record> list=Db.find("SELECT id,num,name,material_items FROM s_supplier WHERE material_ids LIKE CONCAT('%',?,'%') AND state='1'",materialId);
+        //将供应商提供该原料的价格取出来
+        for (Record record:list){
+            String materialItems=record.getStr("material_items");
+            JSONObject jsonObject=JSONObject.parseObject(materialItems);
+            JSONArray jsonArray=jsonObject.getJSONArray("items");
+            int len=jsonArray.size();
+            double currentPrice=0;
+            for (int i=0;i<len;i++){
+                if (StringUtils.equals(jsonArray.getJSONObject(i).getString("id"),materialId)){
+                    currentPrice=jsonArray.getJSONObject(i).getDoubleValue("current_price");
+                    break;
+                }
+            }
+            record.set("current_price",currentPrice);
+            record.remove("material_items");
+        }
+        return list;
+    }
 }

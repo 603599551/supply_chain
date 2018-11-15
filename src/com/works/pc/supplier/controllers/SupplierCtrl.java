@@ -140,4 +140,15 @@ public class SupplierCtrl extends BaseCtrl<SupplierService> {
         renderJson(jhm);
     }
 
+    /**
+     * 查询能提供该原料的供应商信息
+     * @author CaryZ
+     * @date 2018-11-13
+     */
+    public void querySupplierForMaterial(){
+        JsonHashMap jhm = new JsonHashMap();
+        String materialId=getPara("material_id");
+        jhm.putSuccess(service.querySupplierForMaterial(materialId));
+        renderJson(jhm);
+    }
 }
