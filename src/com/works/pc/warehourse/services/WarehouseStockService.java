@@ -87,7 +87,8 @@ public class WarehouseStockService extends BaseService {
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             Record materialR=materialMap.get(countItem.getStr("id"));
-            countItem.set("material_data",materialR.toString());
+            //由于仓库入库时，material_data存了提供本批次原料的供应商id，编号，姓名，因此在更新库存信息时不更新material_data
+//            countItem.set("material_data",materialR.toString());
             countItem.set("id",countItem.getStr("stock_id"));
             countItem.set("user_id",record.getStr("count_id"));
             countItem.set("warehouse_id",record.getStr("warehouse_id"));
