@@ -1,6 +1,7 @@
 package com.works.pc.goods.services;
 
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.common.service.BaseService;
 import com.bean.TableBean;
 import com.constants.DictionaryConstants;
@@ -186,20 +187,24 @@ public class MaterialService extends BaseService {
     }
 
     /**
-     * 获取带有原料批号的分类原料树
+     * 将门店/仓库 库存以树的方式体现（在盘点时用到）
+     * @param tableName 库存表名
+     * @param columnName 字段名
+     * @param columnValue 字段值
      * @return
      */
-    public Record getBatchNumTree(){
-        Record root=getMaterialTree();
-        List<Record> materialList=Db.find("select m.*, m.catalog_id catalog_pid,m.id catalog_cid from s_material m where m.state=?", 1);
-        if(materialList != null && materialList.size() > 0){
-            for(Record r : materialList){
-                handleRecord(r);
-            }
+    public Record getStockTree(String tableName,String columnName,String columnValue){
+        List<Record> catalogList = Db.find("select c.*,c.name search_text,c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "material");
+        List<Record> stockList=Db.find("SELECT *,id catalog_cid FROM "+tableName+" WHERE "+columnName+"=?",columnValue);
+        for (Record record:stockList){
+            JSONObject jsonObject=JSONObject.parseObject(record.getStr("material_data"));
+            record.set("catalog_pid",jsonObject.getString("catalog_id"));
+            record.set("material_data",jsonObject);
         }
-        List<Record> stockList=Db.find("SELECT *,material_id catalog_pid,'' catalog_cid FROM s_warehouse_stock WHERE warehouse_id=?","999a561766b142349ca73f1cac54a18a");
-        List<Record> allList = new ArrayList<>(materialList);
-        allList.addAll(stockList);
+        Record root = new Record();
+        root.set("catalog_cid", "0");
+        List<Record> allList = new ArrayList<>(stockList);
+        allList.addAll(catalogList);
         BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
         return root;
     }
