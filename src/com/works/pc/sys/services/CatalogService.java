@@ -16,6 +16,7 @@ import com.works.pc.store.services.StoreStockService;
 import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.warehourse.services.WarehouseStockService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -128,4 +129,30 @@ public class CatalogService extends BaseService {
         }
         return null;
     }
+
+
+    /**
+     * 通过在分类名称前面加全角空格和拐角符号造出一个仿真树
+     * @author CaryZ
+     * @date 2018-11-15
+     * @param type 区别原料和商品类型 material:原料 product:商品
+     * @return list 仿真树
+     */
+    public List<Record> createEmulationalTree(String type) throws PcException{
+        Record typeRecord=new Record();
+        typeRecord.set("type",type);
+        Record root=new Record();
+        root.set("id","0");
+        root.set("showChildren","false");
+        List<Record> list=super.list(typeRecord);
+        if (list!=null&&list.size()>0){
+            for (Record record:list){
+                record.set("name","┣"+record.getStr("name"));
+                record.set("showChildren","false");
+            }
+        }
+        BeanUtils.createEmulationalTree(root,list);
+        return list;
+    }
+
 }

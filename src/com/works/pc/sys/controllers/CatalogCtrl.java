@@ -63,6 +63,28 @@ public class CatalogCtrl extends BaseCtrl<CatalogService> {
     }
 
     /**
+     * 通过type(material:原料 product:商品)查询s_catelog表生成一个仿真树
+     * @author CaryZ
+     * @date 2018-11-15
+     */
+    public void createEmulationalTree(){
+        JsonHashMap jhm=new JsonHashMap();
+        String type=getPara("type");
+        try{
+            List<Record> list=service.createEmulationalTree(type);
+            if (list==null){
+                jhm.putFail("查询失败！");
+            }else {
+                jhm.putSuccess(list);
+            }
+        }catch (PcException e){
+            e.printStackTrace();
+            jhm.putError(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
+    /**
      * 获取分类的所有二级记录
      * @author CaryZ
      * @date 2018-11-15
