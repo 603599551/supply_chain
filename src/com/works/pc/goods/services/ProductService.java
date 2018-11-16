@@ -54,6 +54,7 @@ public class ProductService extends BaseService {
         }
         for(Record r : productCatalogList){
             r.remove("bom");
+            r.set("showChild", false);
         }
         Record root = new Record();
         root.set("id", "0");
@@ -69,6 +70,11 @@ public class ProductService extends BaseService {
         List<Record> allList = new ArrayList<>();
 
         List<Record> catalogList = Db.find("select c.*,c.name search_text,c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "product");
+        if(catalogList != null && catalogList.size() > 0){
+            for(Record r : catalogList){
+                r.set("showChild", false);
+            }
+        }
         allList.addAll(catalogList);
         Record productTree = getProductTree(record);
         if(productTree != null && productTree.get("children") != null){
