@@ -1,0 +1,12 @@
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('13b2c5d4c85743cfb5e25a1b0d2579c3', '1003', 80, '', '饮料', 'ecf6f6274b094d89b6ea83fc57f197c9', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('1bc36920bf1848b3bfd56c012de48679', '5003', 200, '', '炸酱面', '2000', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('1fb34ce405f0466282e02a89dc379ef4', '3003', 250, '', '小食', '69dc7a1fc1964c438956d33376666d9b', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('2000', '2001', 20, '', '面品', '0', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('30cfe80b74bd4503b3133bcceae2c8cf', '2005', 230, '', '面食', '2000', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('3de06f7f27ff4d1ea74f0d70f0d599e9', '5002', 190, '', '汤面', '2000', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('4afd042144d04e858a44df9f2b1561bf', '5004', 210, '', '拌面', '2000', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('69dc7a1fc1964c438956d33376666d9b', '6001', 160, '', '菜品', '0', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('93ed4183c2284aa6ad490de231f38f87', '001', 30, '', '其它', '0', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('a2a882ff9d784f18801481a000a39ca1', '3002', 100, '', '菜品中类', '69dc7a1fc1964c438956d33376666d9b', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('b7158da6bedc4dc1bbe27f916fd6e6c2', '4002', 170, '', '酒', 'ecf6f6274b094d89b6ea83fc57f197c9', 'product');
+INSERT INTO `s_catalog` (`id`, `num`, `sort`, `remark`, `name`, `parent_id`, `type`) VALUES ('ecf6f6274b094d89b6ea83fc57f197c9', '4001', 140, '', '饮品', '0', 'product');

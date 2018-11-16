@@ -17,14 +17,13 @@
     类型:<input id="types"><br>
     <input type="button" id="btn" value="测试">
 </form>
-<div id="msg">
+<textarea rows="40" cols="150" id="msg"></textarea>
 
-</div>
 </body>
 <script src="static/js/jquery-1.10.1.js"></script>
 <script>
     $(function () {
-        $("#msg").html("");
+        $("#msg").val("");
         $("#loginMsg").html("");
         $("#loginBtn").click(function () {
             $.ajax({
@@ -38,7 +37,7 @@
             })
         });
         $("#btn").click(function () {
-            $("#msg").html("");
+            $("#msg").val("");
             var url = $("#url").val();
             var type = $("#type").val();
             if(type == null || type.length == 0){
@@ -68,7 +67,7 @@
                 data : data,
                 dataType : "text",
                 success : function(msg){
-                    $("#msg").html(msg);
+                    $("#msg").val(msg);
                 }
             });
         });

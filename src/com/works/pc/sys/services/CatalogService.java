@@ -9,6 +9,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
+import com.utils.HanyuPinyinHelper;
 import com.works.pc.goods.services.MaterialService;
 import com.works.pc.goods.services.ProductService;
 import com.works.pc.purchase.services.PurchaseOrderService;
@@ -63,6 +64,8 @@ public class CatalogService extends BaseService {
         if (list!=null&&list.size()>0){
             for (Record record:list){
                 record.set("showChildren","false");
+                String search_text = record.getStr("name") + "-" + HanyuPinyinHelper.getFirstLettersLo(record.getStr("name"));
+                record.set("serach_text", search_text);
             }
         }
         BeanUtils.createTree(root,list);

@@ -8,6 +8,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.utils.*;
 import com.works.pc.goods.services.ProductService;
 
+import java.util.List;
 import java.util.Map;
 
 public class ProductCtrl extends BaseCtrl<ProductService> {
@@ -28,8 +29,11 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
 
     @Override
     public void handleAddRecord(Record record) {
+        UserSessionUtil usu = new UserSessionUtil(getRequest());
         record.set("state", 1);
         record.set("pinyin", HanyuPinyinHelper.getFirstLettersLo(record.getStr("name")));
+        record.set("create_id", usu.getSysUserId());
+        record.set("sort", service.getCurrentSort() + 10);
     }
 
     @Override
@@ -40,9 +44,11 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     @Override
     public void createRecordBeforeSelect(Record record) {
         String keyword = getPara("keyword");
-        String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
-        String[] value = {keyword, keyword, keyword};
-        record.set(key, value);
+        if(keyword != null && keyword.length() > 0){
+            String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
+            String[] value = {keyword, keyword, keyword};
+            record.set(key, value);
+        }
     }
 
     /**
@@ -56,18 +62,22 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     /**
      * 获取带有分类的商品树
      */
-    public void getMaterialTree(){
+    public void getProductTree(){
+        Record record = getParaRecord();
         JsonHashMap jhm = new JsonHashMap();
-        Record root = service.getProductCatalogTree();
+        Record root = service.getProductCatalogTree(record);
         jhm.putSuccess(root);
         renderJson(jhm);
     }
 
-    public void bom(){
+    /**
+     * 修改商品bom接口
+     */
+    public void updateBom(){
         JsonHashMap jhm = new JsonHashMap();
         JSONObject json = getJson(getRequest());
         try {
-            boolean flag = service.bom(json);
+            boolean flag = service.updateBom(json);
             if(flag){
                 jhm.putMessage("更新bom成功！");
             }else{
@@ -79,4 +89,33 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
         }
         renderJson(jhm);
     }
+
+    public void getProductUnit(){
+        JsonHashMap jhm = new JsonHashMap();
+        try {
+            List<Record> unitList = service.getProductUnit();
+            jhm.putSuccess(unitList);
+        }catch (PcException e){
+            e.printStackTrace();
+            jhm.putFail(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
+    /**
+     * 通过id删除商品
+     */
+    public void deleteById(){
+        JsonHashMap jhm = new JsonHashMap();
+        String id = getPara("id");
+        try {
+            service.deleteById(id);
+            jhm.putMessage("删除成功！");
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putMessage(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
 }
