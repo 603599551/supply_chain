@@ -41,11 +41,18 @@ public class StoreStockService extends BaseService {
 
     @Override
     public List<Record> listBeforeReturn(List<Record> list) {
+        for (Record r:list){
+            r.set("material_data",JSONObject.parseObject(r.getStr("material_data")));
+        }
         return list;
     }
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list=page.getList();
+        for (Record r:list){
+            r.set("material_data",JSONObject.parseObject(r.getStr("material_data")));
+        }
         return page;
      }
 

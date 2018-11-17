@@ -21,39 +21,68 @@ public class OrderNumberGenerator {
      * 门店盘点单类型
      */
     private static final String TYPE_MDPD="MDPD";
+    /**
+     * 仓库采购单类型
+     */
+    private static final String TYPE_CKPD="CKPD";
+    /**
+     * 仓库退货单类型
+     */
+    private static final String TYPE_CKTH="CKTH";
+
+
+    public static synchronized String getOrderNumber(String name,String remark,String type){
+        String reStr="";
+        String date= DateUtil.GetDate();
+        Record r= Db.findFirst("SELECT * FROM s_order_number WHERE type=?",type);
+        if(r!=null){//如果有记录就继续判断
+            String dateInR=r.getStr("date");
+            if(date.equals(dateInR)){//如果日期相同
+                int number=r.getInt("number");
+                number++;
+                reStr=getNumber(type,date,LENGTH,number);
+                Db.update("UPDATE s_order_number SET number=? WHERE type=?",number,type);
+            }else{//如果数据库中的日期不是当前系统日期
+                Db.update("UPDATE s_order_number SET date=?,number=? WHERE type=?",date,1,type);
+                reStr=getNumber(type,date,LENGTH,1);
+            }
+        }else{//如果没有记录就添加记录
+            Record saveR=new Record();
+            saveR.set("date",date);
+            saveR.set("name",name);
+            saveR.set("type",type);
+            saveR.set("number",1);
+            saveR.set("remark",remark);
+
+            Db.save("s_order_number",saveR);
+
+            reStr=getNumber(type,date,LENGTH,1);
+        }
+        return reStr.replace("-","");
+    }
 
     /**
      * 生成门店盘点编号
      * @return
      */
     public static synchronized String getStoreCountOrderNumber(){
-        String reStr="";
-        String date= DateUtil.GetDate();
-        Record r= Db.findFirst("SELECT * FROM s_order_number WHERE type=?",TYPE_MDPD);
-        if(r!=null){//如果有记录就继续判断
-            String dateInR=r.getStr("date");
-            if(date.equals(dateInR)){//如果日期相同
-                int number=r.getInt("number");
-                number++;
-                reStr=getNumber(TYPE_MDPD,date,LENGTH,number);
-                Db.update("UPDATE s_order_number SET number=? WHERE type=?",number,TYPE_MDPD);
-            }else{//如果数据库中的日期不是当前系统日期
-                Db.update("UPDATE s_order_number SET date=?,number=? WHERE type=?",date,1,TYPE_MDPD);
-                reStr=getNumber(TYPE_MDPD,date,LENGTH,1);
-            }
-        }else{//如果没有记录就添加记录
-            Record saveR=new Record();
-            saveR.set("date",date);
-            saveR.set("name","门店盘点单");
-            saveR.set("type",TYPE_MDPD);
-            saveR.set("number",1);
-            saveR.set("remark","门店盘点编号");
+        return getOrderNumber("门店盘点单","门店盘点编号",TYPE_MDPD);
+    }
 
-            Db.save("s_order_number",saveR);
+    /**
+     * 生成仓库采购单编号
+     * @return
+     */
+    public static synchronized String getWarehousePurchaseOrderNumber(){
+        return getOrderNumber("仓库采购单","仓库采购编号",TYPE_CKPD);
+    }
 
-            reStr=getNumber(TYPE_MDPD,date,LENGTH,1);
-        }
-        return reStr.replace("-","");
+    /**
+     * 生成仓库退货单编号
+     * @return
+     */
+    public static synchronized String getWarehouseReturnOrderNumber(){
+        return getOrderNumber("仓库退货单","仓库退货编号",TYPE_CKTH);
     }
 
 //    /**

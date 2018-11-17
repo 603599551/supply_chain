@@ -1,0 +1,5 @@
+ALTER TABLE `s_supplier`
+	ADD COLUMN `phone` VARCHAR(100) NULL DEFAULT NULL COMMENT '供应商电话' AFTER `name`;
+ALTER TABLE `s_supplier`
+	ADD COLUMN `linkman` VARCHAR(100) NULL DEFAULT NULL COMMENT '联系人名字' AFTER `name`,
+	CHANGE COLUMN `phone` `phone` VARCHAR(100) NULL DEFAULT NULL COMMENT '联系人电话' AFTER `linkman`;
