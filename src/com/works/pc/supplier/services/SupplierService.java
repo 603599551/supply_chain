@@ -34,9 +34,9 @@ import java.util.UUID;
 public class SupplierService extends BaseService {
 
     private static final String TABLENAME="s_supplier";
-    private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","updatedate","remark"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","DATETIME","VARCHAR"};
-    private static String[] columnCommentArr = {"","","","","","","","","","","",""};
+    private static String[] columnNameArr = {"id","address_id","num","pinyin","name","city","address","material_items","material_ids","state","updatedate","remark","linkman","phone"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","DATETIME","VARCHAR","VARCHAR","VARCHAR"};
+    private static String[] columnCommentArr = {"","","","","","","","","","","","","",""};
 
     public SupplierService() {
         super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
