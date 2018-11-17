@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.utils.BeanUtils.recordListToMapList;
+
 public class WarehouseCountService extends BaseService {
 
     private static final String TABLENAME="s_warehouse_count";
@@ -95,11 +97,7 @@ public class WarehouseCountService extends BaseService {
                 break;
             }
         }
-        List<Map<String,Object>> mapList=new ArrayList<>();
-        for (Record materialR:materialList){
-            Map<String,Object> map=materialR.getColumns();
-            mapList.add(map);
-        }
+        List<Map<String,Object>>mapList=recordListToMapList(materialList);
         JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(mapList));
         Map<String,JSONArray> map=new HashMap(1);
         map.put("items",jsonArray);

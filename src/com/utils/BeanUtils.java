@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BeanUtils {
 
@@ -102,5 +103,19 @@ public class BeanUtils {
      */
     public static void createEmulationalTree(Record root, List<Record> list){
         createEmulationalTree(root, list, "parent_id", "id","");
+    }
+
+    /**
+     * List<Record>转List<Map>
+     * @param recordList
+     * @return
+     */
+    public static List<Map<String,Object>> recordListToMapList(List<Record> recordList){
+        List<Map<String,Object>> mapList=new ArrayList<>();
+        for (Record record:recordList){
+            Map<String,Object> map=record.getColumns();
+            mapList.add(map);
+        }
+        return mapList;
     }
 }
