@@ -107,7 +107,12 @@ public class StoreCountService extends BaseService {
                 break;
             }
         }
-        JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(materialList));
+        List<Map<String,Object>> mapList=new ArrayList<>();
+        for (Record materialR:materialList){
+            Map<String,Object> map=materialR.getColumns();
+            mapList.add(map);
+        }
+        JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(mapList));
         Map<String,JSONArray> map=new HashMap(1);
         map.put("items",jsonArray);
         record.set("sort",super.getCurrentSort()+1);

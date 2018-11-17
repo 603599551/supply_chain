@@ -10,6 +10,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.works.pc.goods.services.MaterialService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,12 @@ public class WarehouseCountService extends BaseService {
                 break;
             }
         }
-        JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(materialList));
+        List<Map<String,Object>> mapList=new ArrayList<>();
+        for (Record materialR:materialList){
+            Map<String,Object> map=materialR.getColumns();
+            mapList.add(map);
+        }
+        JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(mapList));
         Map<String,JSONArray> map=new HashMap(1);
         map.put("items",jsonArray);
         record.set("sort",super.getCurrentSort()+1);
