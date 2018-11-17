@@ -83,7 +83,9 @@ public class WarehouseCountService extends BaseService {
             materialMap1.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
             materialMap2.put(materialList.get(j).getStr("id"),materialList.get(j));
         }
-        warehouseStockService.batchHandle(record,countItems,materialMap2);
+        if (!warehouseStockService.batchHandle(record,countItems,materialMap2)){
+            return null;
+        }
         JSONObject job;
         for (int i=0;i<countLen;i++){
             job=countItems.getJSONObject(i);
