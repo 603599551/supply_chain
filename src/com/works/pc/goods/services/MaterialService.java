@@ -76,12 +76,16 @@ public class MaterialService extends BaseService {
      * @return 删除数量
      * @throws PcException
      */
-    public int deleteById(String id) throws PcException {
+    public String deleteById(String id) throws PcException {
         String tableName = getCannotRecordList(id);
         if(tableName == null){
-            return super.delete(id);
+            int i = super.delete(id);
+            if(i > 0){
+                return null;
+            }
+            return "删除失败";
         }else{
-            throw new PcException(APP_DELETE_EXCEPTION, "该原料被" + tableName + "占用，不能删除！");
+            return "该原料被" + tableName + "占用，不能删除！";
         }
     }
 

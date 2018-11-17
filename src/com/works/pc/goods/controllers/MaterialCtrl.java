@@ -65,8 +65,12 @@ public class MaterialCtrl extends BaseCtrl<MaterialService> {
         JsonHashMap jhm = new JsonHashMap();
         String id = getPara("id");
         try {
-            service.deleteById(id);
-            jhm.putMessage("删除成功！");
+            String msg = service.deleteById(id);
+            if(msg != null){
+                jhm.putMessage(msg);
+            }else{
+                jhm.putMessage("删除成功！");
+            }
         } catch (PcException e) {
             e.printStackTrace();
             jhm.putMessage(e.getMsg());

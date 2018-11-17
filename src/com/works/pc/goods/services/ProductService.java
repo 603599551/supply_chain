@@ -8,7 +8,9 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.BeanUtils;
+import com.works.pc.order.services.OrderService;
 import com.works.pc.purchase.services.PurchaseOrderService;
+import com.works.pc.store.services.StoreProductRelationService;
 import com.works.pc.store.services.StoreStockService;
 import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.warehourse.services.WarehouseStockService;
@@ -151,75 +153,65 @@ public class ProductService extends BaseService {
      * @return 删除数量
      * @throws PcException
      */
-    public int deleteById(String id) throws PcException {
+    public String deleteById(String id) throws PcException {
         String tableName = getCannotRecordList(id);
         if(tableName == null){
-            return super.delete(id);
+            int i = super.delete(id);
+            if(i > 0){
+                return null;
+            }
+            return "删除失败";
         }else{
-            throw new PcException(APP_DELETE_EXCEPTION, "该商品被" + tableName + "占用，不能删除！");
+            return "该商品被" + tableName + "占用，不能删除！";
         }
     }
 
     /**
-     * 获取不能删除的原料数据
-     * 判断以下表中数据是否用到了当前原料，括号中是因为当前表而不需要去查询的表
-     * 1、仓库库存（仓库盘点、仓库废弃、出库单、移库单）
-     * 2、门店库存（门店盘点、门店废弃、门店退货）
-     * 3、采购订单（采购退货）
-     * 4、供应商
-     * 5、商品（订单）
+     * 获取不能删除的商品数据
+     * 判断以下表中数据是否用到了当前商品，括号中是因为当前表而不需要去查询的表
+     * 1、门店商品关联
+     * 2、门店订单表（门店退货单、门店废弃单）
+     * 3、商品表
      * @param id
      * @return
      */
     private String getCannotRecordList(String id){
-        WarehouseStockService warehouseStockService = enhance(WarehouseStockService.class);
-        StoreStockService storeStockService = enhance(StoreStockService.class);
-        PurchaseOrderService purchaseOrderService = enhance(PurchaseOrderService.class);
-        SupplierService supplierService = enhance(SupplierService.class);
-        ProductService productService = enhance(ProductService.class);
-        List<Record> warehouseStockList = warehouseStockService.selectByColumnIn("material_id", id);
-        if(warehouseStockList != null && warehouseStockList.size() > 0){
-            return "仓库库存";
-        }
-        List<Record> storeStockList = storeStockService.selectByColumnIn("material_id", id);
-        if(storeStockList != null && storeStockList.size() > 0){
-            return "门店库存";
-        }
+        StoreProductRelationService storeProductRelationService = enhance(StoreProductRelationService.class);
+        OrderService orderService = enhance(OrderService.class);
+        Record storeProductRelation = new Record();
+        storeProductRelation.set("product_id", id);
         try {
-            Record purchaseOrderSelect = new Record();
-            String likeKey = "$like#item";
-            purchaseOrderSelect.set(likeKey, id);
-            List<Record> purchaseOrderList = purchaseOrderService.list(purchaseOrderSelect);
-            if(purchaseOrderList != null && purchaseOrderList.size() > 0){
-                return "采购订单";
+            List<Record> storeProductRelationList = storeProductRelationService.list(storeProductRelation);
+            if(storeProductRelationList != null && storeProductRelationList.size() > 0){
+                return "门店商品关联";
             }
         } catch (PcException e) {
             e.printStackTrace();
-            return "采购订单";
+            return "门店商品关联";
         }
+        Record order = new Record();
+        String key = "$like#order_item";
+        String value = id;
+        order.set(key, value);
         try {
-            Record supplierSelect = new Record();
-            String likeKey = "$like#material_ids";
-            supplierSelect.set(likeKey, id);
-            List<Record> supplierList = supplierService.list(supplierSelect);
-            if(supplierList != null && supplierList.size() > 0){
-                return "供应商";
+            List<Record> orderList = orderService.list(order);
+            if(orderList != null && orderList.size() > 0){
+                return "门店订货单";
             }
         } catch (PcException e) {
             e.printStackTrace();
-            return "供应商";
+            return "门店订货单";
         }
+        Record product = new Record();
+        product.set("parent_id", id);
         try {
-            Record productSelect = new Record();
-            String likeKey = "$like#bom";
-            productSelect.set(likeKey, id);
-            List<Record> productList = productService.list(productSelect);
+            List<Record> productList = this.list(product);
             if(productList != null && productList.size() > 0){
-                return "商品";
+                return "子商品";
             }
         } catch (PcException e) {
             e.printStackTrace();
-            return "商品";
+            return "子商品";
         }
         return null;
     }
