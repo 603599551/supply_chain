@@ -1,8 +1,6 @@
 package com.common.service;
 
 import com.alibaba.druid.util.StringUtils;
-import com.alibaba.fastjson.JSONObject;
-import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.bean.TableBean;
 import com.constants.KEY;
@@ -13,13 +11,9 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.utils.StringUtil;
 import com.utils.UUIDTool;
-import javafx.beans.binding.ObjectExpression;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -195,69 +189,19 @@ public abstract class BaseService implements KEY, Sql{
             for(Map.Entry<String, Object> entry : columns.entrySet()){
                 if(entry.getValue() != null){
                     if(entry.getKey().startsWith("$like#")){
-                        if (!flag){
-                            result.append(" and " + entry.getKey().replace("$like#", "") + " like ? ");
-                        }else {
-                            result.append(" and `" + entry.getKey().replace("$like#", "") + "` like ? ");
-                        }
+                        result.append(createLike(flag, entry));
                         params.add("%" + entry.getValue() + "%");
                     }else if (entry.getKey().startsWith("$all")){
-                        String start = entry.getKey().split("#")[0];
-                        String andOr = start.split("\\$")[2];
-                        if(!"and".equals(andOr) && !"or".equals(andOr)){
-                            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
-                        }
-                        StringBuilder sql = new StringBuilder(" " + andOr + " ( ");
-                        String key = entry.getKey().replace(start + "#", "");
-                        String[] termArr = key.split("#");
-                        Object[] paramsArr = (Object[])entry.getValue();
-                        if(termArr.length != paramsArr.length){
-                            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！参数匹配长度是" + paramsArr.length);
-                        }
-                        for(String term : termArr){
-                            String[] oneTerm = term.split("\\$");
-                            if(oneTerm.length != 3){
-                                throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
-                            }else{
-                                if (StringUtils.equals(term,termArr[0])){
-                                    oneTerm[2]="";
-                                }
-                                if("like".equals(oneTerm[1])){
-                                    if (!flag){
-                                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + " like CONCAT('%',?,'%') ");
-                                    }else {
-                                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like CONCAT('%',?,'%') ");
-                                    }
-
-                                }else if("eq".equals(oneTerm[1])){
-                                    if (!flag){
-                                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + "=? ");
-                                    }else {
-                                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
-                                    }
-                                }else{
-                                    throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
-                                }
-                            }
-                        }
-                        for(Object obj : paramsArr){
-                            params.add(obj);
-                        }
-                        sql.append(")");
-                        result.append(sql);
+                        result.append(createAll(flag, entry, params));
                     }else if(entry.getKey().startsWith("$in")){
-                        String[] valueArr = (String[]) entry.getValue();
-                        if(valueArr != null && valueArr.length > 0){
-                            //$in#and#column
-                            String[] keyArr = entry.getKey().split("#");
-                            String sql = keyArr[1] + " " + keyArr[2] + " in({{wildcard}})";
-                            String wildcard = "";
-                            for(String s : valueArr){
-                                wildcard += "?,";
-                                params.add(s);
-                            }
-                            wildcard = wildcard.substring(0, wildcard.length() - 1);
-                            result.append(sql.replace("{{wildcard}}", wildcard));
+                        String sql = createIn(entry, params);
+                        if(sql != null){
+                            result.append(sql);
+                        }
+                    }else if(entry.getKey().startsWith("$<>")){
+                        String sql = createNotIn(entry, params);
+                        if(sql != null){
+                            result.append(sql);
                         }
                     }
                 }
@@ -272,6 +216,123 @@ public abstract class BaseService implements KEY, Sql{
             }
         }
         return result;
+    }
+
+    /**
+     * 创建like子句
+     * @param flag 是否用默认的字段名
+     * @param entry record的每项
+     * @return
+     */
+    private StringBuilder createLike(boolean flag, Map.Entry<String, Object> entry){
+        StringBuilder result = new StringBuilder();
+        if (!flag){
+            result.append(" and " + entry.getKey().replace("$like#", "") + " like ? ");
+        }else {
+            result.append(" and `" + entry.getKey().replace("$like#", "") + "` like ? ");
+        }
+        return result;
+    }
+
+    /**
+     * 创建多条件查询子句
+     * @param flag 是否使用默认字段
+     * @param entry record子项
+     * @param params 替换问号的参数集合
+     * @return
+     * @throws PcException
+     */
+    private StringBuilder createAll(boolean flag, Map.Entry<String, Object> entry, List<Object> params) throws PcException{
+        String start = entry.getKey().split("#")[0];
+        String andOr = start.split("\\$")[2];
+        if(!"and".equals(andOr) && !"or".equals(andOr)){
+            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+        }
+        StringBuilder sql = new StringBuilder(" " + andOr + " ( ");
+        String key = entry.getKey().replace(start + "#", "");
+        String[] termArr = key.split("#");
+        Object[] paramsArr = (Object[])entry.getValue();
+        if(termArr.length != paramsArr.length){
+            throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！参数匹配长度是" + paramsArr.length);
+        }
+        for(String term : termArr){
+            String[] oneTerm = term.split("\\$");
+            if(oneTerm.length != 3){
+                throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+            }else{
+                if (StringUtils.equals(term,termArr[0])){
+                    oneTerm[2]="";
+                }
+                if("like".equals(oneTerm[1])){
+                    if (!flag){
+                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + " like CONCAT('%',?,'%') ");
+                    }else {
+                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "` like CONCAT('%',?,'%') ");
+                    }
+
+                }else if("eq".equals(oneTerm[1])){
+                    if (!flag){
+                        sql.append(" " + oneTerm[2] + " " + oneTerm[0] + "=? ");
+                    }else {
+                        sql.append(" " + oneTerm[2] + " `" + oneTerm[0] + "`=? ");
+                    }
+                }else{
+                    throw new PcException(SQL_WHERE_CREATE_EXCEPTION, "参数：" + entry.getKey() + "错误！");
+                }
+            }
+        }
+        for(Object obj : paramsArr){
+            params.add(obj);
+        }
+        sql.append(")");
+        return sql;
+    }
+
+    /**
+     * 创建in子句
+     * @param entry record子项
+     * @param params 替换问号的集合
+     * @return
+     */
+    private String createIn(Map.Entry<String, Object> entry, List<Object> params){
+        String[] valueArr = (String[]) entry.getValue();
+        if(valueArr != null && valueArr.length > 0){
+            //$in#and#column
+            String[] keyArr = entry.getKey().split("#");
+            String sql = keyArr[1] + " " + keyArr[2] + " in({{wildcard}})";
+            String wildcard = "";
+            for(String s : valueArr){
+                wildcard += "?,";
+                params.add(s);
+            }
+            wildcard = wildcard.substring(0, wildcard.length() - 1);
+            return sql.replace("{{wildcard}}", wildcard);
+        }
+        return null;
+    }
+
+    /**
+     * 创建不等于SQL子句
+     * $<>and#column
+     * @param entry record子项
+     *              value必须是一个数组，该方法用not in实现，不是<>实现的
+     * @param params 替换问号的参数集合
+     * @return
+     */
+    private String createNotIn(Map.Entry<String, Object> entry, List<Object> params){
+        String[] valueArr = (String[]) entry.getValue();
+        if(valueArr != null && valueArr.length > 0){
+            String[] keyArr = entry.getKey().split("#");
+            String sql = keyArr[1] + " " + keyArr[2] + " not in({{wildcard}})";
+            String wildcard = "";
+            for(String s : valueArr){
+                wildcard += "?,";
+                params.add(s);
+            }
+            wildcard = wildcard.substring(0, wildcard.length() - 1);
+            return sql.replace("{{wildcard}}", wildcard);
+        }
+        return null;
     }
 
     /**

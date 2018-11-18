@@ -40,6 +40,41 @@ public class MaterialService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        if(page != null && page.getList().size() > 0){
+            SupplierService supplierService = enhance(SupplierService.class);
+            try {
+                List<Record> supplierList = supplierService.list(null);
+                if(supplierList != null && supplierList.size() > 0){
+                    Map<String, List<Record>> supplierListMap = new HashMap<>();
+                    for(Record r : supplierList){
+                        String[] materialIdArr = r.getStr("material_ids").split(",");
+                        for(String materialId : materialIdArr){
+                            List<Record> sList = supplierListMap.computeIfAbsent(materialId, k-> new ArrayList<>());
+                            sList.add(r);
+                        }
+                    }
+                    for(Record r : page.getList()){
+                        List<Record> sList = supplierListMap.get(r.getStr("id"));
+                        if(sList != null && sList.size() > 0){
+                            String supplierNames = "";
+                            List<Record> supplierLists = new ArrayList<>();
+                            for(Record supplier : sList){
+                                Record supp = new Record();
+                                supp.set("id", supplier.getStr("id"));
+                                supp.set("name", supplier.getStr("name"));
+                                supplierLists.add(supp);
+                                supplierNames += supplier.getStr("name") + ",";
+                            }
+                            supplierNames = supplierNames.substring(0, supplierNames.length() - 1);
+                            r.set("supplierList", supplierLists);
+                            r.set("supplierNames", supplierNames);
+                        }
+                    }
+                }
+            } catch (PcException e) {
+                e.printStackTrace();
+            }
+        }
         return page;
      }
 

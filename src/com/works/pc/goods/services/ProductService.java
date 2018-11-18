@@ -22,9 +22,9 @@ import java.util.Set;
 
 public class ProductService extends BaseService {
 
-    private static String[] columnNameArr = {"id","create_id","catalog_id","name","num","pinyin","state","bom","sort","type","wm_type","unit","attribute","parent_id","parent_name","parent_num","cost_price","purchase_price","sell_price","remark"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","INT","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","DECIMAL","DECIMAL","DECIMAL","VARCHAR"};
-    private static String[] columnCommentArr = {"","","","","","","","","","","","","","","","","","","",""};
+    private static String[] columnNameArr = {"id", "create_id", "catalog_id", "name", "num", "pinyin", "state", "bom", "sort", "type", "wm_type", "unit", "attribute", "parent_id", "parent_name", "parent_num", "cost_price", "purchase_price", "sell_price", "remark"};
+    private static String[] columnTypeArr = {"VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "INT", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "DECIMAL", "DECIMAL", "DECIMAL", "VARCHAR"};
+    private static String[] columnCommentArr = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
 
     public ProductService() {
         super("s_product", new TableBean("s_product", columnNameArr, columnTypeArr, columnCommentArr));
@@ -32,29 +32,40 @@ public class ProductService extends BaseService {
 
     @Override
     public List<Record> listBeforeReturn(List<Record> list) {
+        if (list != null && list.size() > 0) {
+            for (Record r : list) {
+                r.set("bom", JSONObject.parseObject(r.getStr("bom")));
+            }
+        }
         return list;
     }
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        if(page != null && page.getList().size() > 0){
+            for (Record r : page.getList()) {
+                r.set("bom", JSONObject.parseObject(r.getStr("bom")));
+            }
+        }
         return page;
-     }
+    }
 
     /**
      * 获取商品树，一级商品默认parent_id=0
+     *
      * @return
      */
     public Record getProductTree(Record record) {
         String state = record.getStr("state");
         List<Record> productCatalogList;
         String sql = "select m.*,CONCAT(m.name,'-',m.num,'-',m.pinyin) search_text,m.catalog_id catalog_pid, '' catalog_cid from s_product m ";
-        if(state != null && state.trim().length() > 0){
+        if (state != null && state.trim().length() > 0) {
             sql += " where m.state=?";
             productCatalogList = Db.find(sql, state);
-        }else{
+        } else {
             productCatalogList = Db.find(sql);
         }
-        for(Record r : productCatalogList){
+        for (Record r : productCatalogList) {
             r.remove("bom");
             r.set("showChild", false);
         }
@@ -66,20 +77,21 @@ public class ProductService extends BaseService {
 
     /**
      * 获取商品和分类组合的树
+     *
      * @return
      */
-    public Record getProductCatalogTree(Record record){
+    public Record getProductCatalogTree(Record record) {
         List<Record> allList = new ArrayList<>();
 
         List<Record> catalogList = Db.find("select c.*,c.name search_text,c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "product");
-        if(catalogList != null && catalogList.size() > 0){
-            for(Record r : catalogList){
+        if (catalogList != null && catalogList.size() > 0) {
+            for (Record r : catalogList) {
                 r.set("showChild", false);
             }
         }
         allList.addAll(catalogList);
         Record productTree = getProductTree(record);
-        if(productTree != null && productTree.get("children") != null){
+        if (productTree != null && productTree.get("children") != null) {
             allList.addAll(productTree.get("children"));
         }
         Record root = new Record();
@@ -91,11 +103,11 @@ public class ProductService extends BaseService {
     @Override
     public String add(Record record) throws PcException {
         String parentId = record.getStr("parent_id");
-        if(parentId != null && parentId.trim().length() > 0){
+        if (parentId != null && parentId.trim().length() > 0) {
             Record parentProduct = this.findById(parentId);
             record.set("bom", parentProduct.getStr("bom"));
             return super.add(record);
-        }else{
+        } else {
             record.set("parent_id", "0");
             return super.add(record);
         }
@@ -105,6 +117,7 @@ public class ProductService extends BaseService {
      * 修改商品bom
      * 修改一级商品bom时会同步所有子商品bom
      * 如果修改的是子商品的bom，那么不会影响其他
+     *
      * @param jsonObject
      * @return
      * @throws PcException
@@ -112,10 +125,10 @@ public class ProductService extends BaseService {
     public boolean updateBom(JSONObject jsonObject) throws PcException {
         String id = jsonObject.getString("id");
         Record product = this.findById(id);
-        if("0".equals(product.get("parent_id"))){
+        if ("0".equals(product.get("parent_id"))) {
             List<Record> productChildren = Db.find("select * from s_product where parent_id=?", id);
-            if(productChildren != null && productChildren.size() > 0){
-                for(Record r : productChildren){
+            if (productChildren != null && productChildren.size() > 0) {
+                for (Record r : productChildren) {
                     r.set("bom", jsonObject.getJSONObject("bom"));
                 }
                 Db.batchUpdate(this.tableName, productChildren, productChildren.size());
@@ -130,13 +143,13 @@ public class ProductService extends BaseService {
     public List<Record> getProductUnit() throws PcException {
         List<Record> result = new ArrayList<>();
         List<Record> unitList = Db.find("SELECT DISTINCT M.UNIT UNIT FROM S_PRODUCT M");
-        if(unitList != null && unitList.size() > 0){
+        if (unitList != null && unitList.size() > 0) {
             Set<String> unitSet = new HashSet<>();
-            for(Record r : unitList){
+            for (Record r : unitList) {
                 unitSet.add(r.getStr("UNIT"));
             }
-            for(String s : unitSet){
-                if(s != null && s.trim().length() > 0){
+            for (String s : unitSet) {
+                if (s != null && s.trim().length() > 0) {
                     Record record = new Record();
                     record.set("name", s);
                     record.set("value", s);
@@ -149,19 +162,20 @@ public class ProductService extends BaseService {
 
     /**
      * 通过id删除product
+     *
      * @param id
      * @return 删除数量
      * @throws PcException
      */
     public String deleteById(String id) throws PcException {
         String tableName = getCannotRecordList(id);
-        if(tableName == null){
+        if (tableName == null) {
             int i = super.delete(id);
-            if(i > 0){
+            if (i > 0) {
                 return null;
             }
             return "删除失败";
-        }else{
+        } else {
             return "该商品被" + tableName + "占用，不能删除！";
         }
     }
@@ -172,17 +186,18 @@ public class ProductService extends BaseService {
      * 1、门店商品关联
      * 2、门店订单表（门店退货单、门店废弃单）
      * 3、商品表
+     *
      * @param id
      * @return
      */
-    private String getCannotRecordList(String id){
+    private String getCannotRecordList(String id) {
         StoreProductRelationService storeProductRelationService = enhance(StoreProductRelationService.class);
         OrderService orderService = enhance(OrderService.class);
         Record storeProductRelation = new Record();
         storeProductRelation.set("product_id", id);
         try {
             List<Record> storeProductRelationList = storeProductRelationService.list(storeProductRelation);
-            if(storeProductRelationList != null && storeProductRelationList.size() > 0){
+            if (storeProductRelationList != null && storeProductRelationList.size() > 0) {
                 return "门店商品关联";
             }
         } catch (PcException e) {
@@ -195,7 +210,7 @@ public class ProductService extends BaseService {
         order.set(key, value);
         try {
             List<Record> orderList = orderService.list(order);
-            if(orderList != null && orderList.size() > 0){
+            if (orderList != null && orderList.size() > 0) {
                 return "门店订货单";
             }
         } catch (PcException e) {
@@ -206,7 +221,7 @@ public class ProductService extends BaseService {
         product.set("parent_id", id);
         try {
             List<Record> productList = this.list(product);
-            if(productList != null && productList.size() > 0){
+            if (productList != null && productList.size() > 0) {
                 return "子商品";
             }
         } catch (PcException e) {
@@ -214,5 +229,41 @@ public class ProductService extends BaseService {
             return "子商品";
         }
         return null;
+    }
+
+    public Record getProductNoCatalogTree(Record record){
+        //$all$and#name$like$or#pinyin$like$or#num$like$or
+        String childSql = "select * from s_product where 1=1 and parent_id<>0 and name like ? or pinyin like ? or num like ?";
+        String parentSql = "select * from s_product where id in({{wildcard}) or (name like ? or pinyin like ? or num like ?)";
+        Record root = new Record();
+        root.set("id", "0");
+        try {
+            List<Record> childList = this.list(record);
+            if(childList != null && childList.size() > 0){
+                Set<String> childrenSet = new HashSet<>();
+                for(int i = 0; i < childList.size(); i++){
+                    childrenSet.add(childList.get(i).get("parent_id"));
+                }
+                Record parent = new Record();
+                parent.setColumns(record);
+                parent.set("$in#and#id", childrenSet.toArray(new String[childrenSet.size()]));
+
+                parent.remove("$<>#and#parent_id");
+                parent.set("parent_id", "0");
+
+                List<Record> parentList = this.list(parent);
+                List<Record> allList = new ArrayList<>(parentList);
+                allList.addAll(childList);
+                BeanUtils.createTree(root, allList);
+            }else{
+                record.remove("$<>#and#parent_id");
+                record.set("parent_id", "0");
+                List<Record> parentList = this.list(record);
+                BeanUtils.createTree(root, parentList);
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+        }
+        return root;
     }
 }

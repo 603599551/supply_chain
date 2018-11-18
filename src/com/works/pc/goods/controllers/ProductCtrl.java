@@ -8,6 +8,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.utils.*;
 import com.works.pc.goods.services.ProductService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,11 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
             String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
             String[] value = {keyword, keyword, keyword};
             record.set(key, value);
+        }
+        String[] catalogIds = getParaValues("catalog_ids");
+        if(catalogIds != null && catalogIds.length > 0){
+            String key = "$in#and#catalog_id";
+            record.set(key, catalogIds);
         }
     }
 
@@ -119,6 +125,23 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
             e.printStackTrace();
             jhm.putMessage(e.getMsg());
         }
+        renderJson(jhm);
+    }
+
+    public void getProductNoCatalogTree(){
+        JsonHashMap jhm = new JsonHashMap();
+        Record record = getParaRecord();
+        String keyword = record.getStr("keyword");
+        if(keyword != null && keyword.trim().length() > 0){
+            String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
+            String[] value = {keyword, keyword, keyword};
+            record.set(key, value);
+        }
+        String[] parentIdArr = {"0"};
+        record.set("$<>#and#parent_id", parentIdArr);
+        Record root = service.getProductNoCatalogTree(record);
+        List<Record> result = root.get("children") != null ? root.get("children") : new ArrayList<>();
+        jhm.putSuccess(result);
         renderJson(jhm);
     }
 
