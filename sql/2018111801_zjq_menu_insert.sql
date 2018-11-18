@@ -1,0 +1,1 @@
+UPDATE `supply_chain`.`s_sys_menu` SET `url`='/purchase/finance_review' WHERE  `id`='53';
