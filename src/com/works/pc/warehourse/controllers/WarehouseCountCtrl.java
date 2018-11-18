@@ -10,6 +10,7 @@ import com.utils.DateUtil;
 import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.warehourse.services.WarehouseCountService;
+import org.apache.commons.lang.StringUtils;
 
 import static com.common.service.OrderNumberGenerator.getStoreCountOrderNumber;
 
@@ -48,7 +49,7 @@ public class WarehouseCountCtrl extends BaseCtrl<WarehouseCountService> {
 
     /**
      * 盘点记录列表
-     * 支持按照门店ID、盘点日期完全匹配查询
+     * 支持按照仓库ID、盘点日期完全匹配查询
      * 按照盘点日期倒序排
      * @param record 查询条件
      */

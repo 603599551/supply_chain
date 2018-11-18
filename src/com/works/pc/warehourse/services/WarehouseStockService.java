@@ -14,6 +14,7 @@ import com.utils.BeanUtils;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -122,7 +123,57 @@ public class WarehouseStockService extends BaseService {
         }
     }
 
+    /**
+     * 在物流发货后根据item每个元素中的stock_id更新仓库库存
+     * @author CaryZ
+     * @date 2018-11-17
+     * @param record 当前流程记录信息
+     * @return 成功/失败 true/false
+     */
+    public boolean updateStockAfterDelivery(Record record){
+        MaterialService ms=enhance(MaterialService.class);
+        String item=record.getStr("item");
+        JSONObject itemJson=JSONObject.parseObject(item);
+        JSONArray itemArray=itemJson.getJSONArray("item");
+        //根据itemArray查询原料的详细信息
+        List<Record> materialList=ms.queryMaterials(itemArray);
+        int len=materialList.size();
+        //materialList转map key存id，value存JSONObject
+        Map<String,Record> materialMap=new HashMap(len);
+        for (int j=0;j<len;j++){
+            materialMap.put(materialList.get(j).getStr("id"),materialList.get(j));
+        }
+        int itemLen=itemArray.size();
+        //item每个元素中的stock_id提出来
+        List<String> ids=new ArrayList<>(itemLen);
+        for (int i=0;i<itemLen;i++){
+            ids.add(itemArray.getJSONObject(i).getString("stock_id"));
+        }
+        //通过id找到历史库存
+        List<Record> stockList=super.selectByColumnIn("id",(String[])ids.toArray());
+        //退货项转成的List<Record>
+        List<Record> itemList=new ArrayList<>(itemLen);
+        String beforeQuantity="";
+        for (int i=0;i<itemLen;i++){
+            Record itemR= BeanUtils.jsonToRecord(itemArray.getJSONObject(i));
+            Record materialR=materialMap.get(itemR.getStr("id"));
+            for (Record stockR:stockList){
+                if (StringUtils.equals(itemR.getStr("stock_id"),stockR.getStr("id"))){
+                    beforeQuantity=stockR.getStr("quantity");
+                    break;
+                }
+            }
+            itemR.set("id",itemR.getStr("stock_id"));
+            //此步是为了便于调用outUnit2SmallUnit函数
+            materialR.set("quantity",itemR.getStr("current_quantity"));
+            //历史库存-退货量
+            itemR.set("quantity", Integer.parseInt(beforeQuantity)-UnitConversion.outUnit2SmallUnit(materialR));
+            itemR.remove("stock_id","before_quantity","current_quantity");
+            itemList.add(itemR);
+        }
+        return Db.batchUpdate(TABLENAME,"id",itemList,itemLen)==null? false:true;
 
+    }
 
     /**
      * 批量更新门店原料库存信息
