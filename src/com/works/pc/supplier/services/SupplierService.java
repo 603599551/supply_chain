@@ -3,26 +3,21 @@ package com.works.pc.supplier.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
-import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
-import com.utils.HanyuPinyinHelper;
-import com.utils.StringUtil;
-import com.utils.UUIDTool;
 import com.works.pc.sys.services.AddressService;
-import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 该类实现以下功能：
@@ -138,30 +133,45 @@ public class SupplierService extends BaseService {
     }
 
     /**
-     * 通过原料id查询供应商的material_ids是否包含该id
-     * 若包含则在list返回
-     * @param materialId 原料id
-     * @return 能提供该原料的供应商信息，包括供应商id和编号、名称、原料价格
+     * 通过原料ids查询供应商的material_ids是否包含该id
+     * @param record 包含原料JSON数组
+     * @return 能提供该原料的供应商信息，包括供应商id、名称
      */
-    public List<Record> querySupplierForMaterial(String materialId){
-        //找出能提供该原料的供应商
-        List<Record> list=Db.find("SELECT id,num,name,material_items FROM s_supplier WHERE material_ids LIKE CONCAT('%',?,'%') AND state='1'",materialId);
-        //将供应商提供该原料的价格取出来
-        for (Record record:list){
-            String materialItems=record.getStr("material_items");
-            JSONObject jsonObject=JSONObject.parseObject(materialItems);
-            JSONArray jsonArray=jsonObject.getJSONArray("items");
-            int len=jsonArray.size();
-            double currentPrice=0;
-            for (int i=0;i<len;i++){
-                if (StringUtils.equals(jsonArray.getJSONObject(i).getString("id"),materialId)){
-                    currentPrice=jsonArray.getJSONObject(i).getDoubleValue("current_price");
-                    break;
+    public void querySupplierForMaterial(Record record){
+        JSONArray jsonArray=JSONArray.parseArray(record.getStr("item"));
+        int len=jsonArray.size();
+        String[] ids=new String[len];
+        ids[0]=jsonArray.getJSONObject(0).getString("id");
+        StringBuffer sql=new StringBuffer("SELECT * FROM s_supplier WHERE material_ids LIKE CONCAT('%',?,'%') ");
+        for (int i=1;i<len;i++){
+            ids[i]=jsonArray.getJSONObject(i).getString("id");
+            sql.append(" OR material_ids LIKE CONCAT('%',?,'%')");
+        }
+        //获取该单所有原料的供应商，会有重复使用的情况
+        List<Record> supplierList= Db.find(sql.toString(),ids);
+        //遍历原料
+        for (int i=0;i<len;i++){
+            String materialId=jsonArray.getJSONObject(i).getString("id");
+            List<Record> finalList=new ArrayList<>();
+            for(Record r:supplierList){
+                //存在包含关系，即该供应商能提供该原料
+                if (r.getStr("material_ids").indexOf(materialId)!=-1){
+                    Record supplierR=new Record();
+                    supplierR.set("name",r.getStr("name"));
+                    supplierR.set("value",r.getStr("id"));
+                    finalList.add(supplierR);
                 }
             }
-            record.set("current_price",currentPrice);
-            record.remove("material_items");
+            jsonArray.getJSONObject(i).put("suppliers",finalList);
         }
-        return list;
+        record.set("item",jsonArray);
+    }
+
+    /**
+     * 获取原料的价格
+     * @return
+     */
+    public double getMaterialPrice(JSONObject jsonObject){
+        return jsonObject.getDouble("current_price");
     }
 }
