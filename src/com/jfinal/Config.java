@@ -86,8 +86,8 @@ public class Config extends JFinalConfig {
         routes.add("/mgr/works/pc/sysMenuCtrl", SysMenuCtrl.class);
         routes.add("/mgr/works/pc/sysRolesCtrl", SysRolesCtrl.class);
         routes.add("/mgr/works/pc/sysUserCtrl", SysUserCtrl.class);
-        routes.add("/mgr/works/pc/warehourseMovementOrderCtrl", WarehourseMovementOrderCtrl.class);
-        routes.add("/mgr/works/pc/warehourseOutOrderCtrl", WarehourseOutOrderCtrl.class);
+        routes.add("/mgr/works/pc/warehouseMovementOrderCtrl", WarehouseMovementOrderCtrl.class);
+        routes.add("/mgr/works/pc/warehouseOutOrderCtrl", WarehouseOutOrderCtrl.class);
         routes.add("/mgr/works/pc/warehouseCtrl", WarehouseCtrl.class);
         routes.add("/mgr/works/pc/warehouseCountCtrl", WarehouseCountCtrl.class);
         routes.add("/mgr/works/pc/warehouseScrapCtrl", WarehouseScrapCtrl.class);

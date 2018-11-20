@@ -2,12 +2,12 @@ package com.works.pc.warehourse.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.jfinal.plugin.activerecord.Record;
-import com.works.pc.warehourse.services.WarehourseOutOrderService;
+import com.works.pc.warehourse.services.WarehouseMovementOrderService;
 
-public class WarehourseOutOrderCtrl extends BaseCtrl<WarehourseOutOrderService> {
+public class WarehouseMovementOrderCtrl extends BaseCtrl<WarehouseMovementOrderService> {
 
-    public WarehourseOutOrderCtrl() {
-        super(WarehourseOutOrderService.class);
+    public WarehouseMovementOrderCtrl() {
+        super(WarehouseMovementOrderService.class);
     }
 
     @Override

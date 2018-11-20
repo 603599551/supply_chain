@@ -1,0 +1,2 @@
+alter table s_warehourse_movement_order RENAME s_warehouse_movement_order;
+alter table s_warehourse_out_order RENAME s_warehouse_out_order;
