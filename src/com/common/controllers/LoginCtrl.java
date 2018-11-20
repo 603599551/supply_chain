@@ -20,7 +20,7 @@ public class LoginCtrl extends Controller {
             Record record = new Record();
             record.set("username", username);
             record.set("password", password);
-            Record r = service.findOne(record);
+            Record r = service.login(record);
             if (r != null) {
                 String state = r.getStr("state");
                 if ("0".equals(state)) {

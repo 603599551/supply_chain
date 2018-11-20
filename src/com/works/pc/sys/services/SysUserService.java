@@ -56,4 +56,8 @@ public class SysUserService extends BaseService {
      public List<Record> getToUsers(String name){
          return Db.find("SELECT id FROM s_sys_user WHERE id=(SELECT id FROM s_sys_roles WHERE name=?) AND state='1'",name);
      }
+
+     public Record login(Record record) throws PcException {
+         return this.findOne(record);
+     }
 }
