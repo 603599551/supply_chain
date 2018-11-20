@@ -3,23 +3,23 @@ package com.works.pc.purchase.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
-import com.sun.org.apache.regexp.internal.RE;
 import com.utils.BeanUtils;
 import com.utils.DateUtil;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
-import com.works.pc.goods.services.MaterialService;
+import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.warehourse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +51,14 @@ public class PurchasePurchasereturnProcessService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
+        List<Record> list=page.getList();
+        for (Record r:list){
+            if (!StringUtils.equals(r.getStr("purchase_order_state"),"warehouse")){
+                JSONObject jsonObject=JSONObject.parseObject(r.getStr("item"));
+                JSONArray jsonArray=jsonObject.getJSONArray("item");
+                r.set("item", jsonArray);
+            }
+        }
         return page;
      }
 
@@ -75,7 +83,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         PurchaseOrderService pos=enhance(PurchaseOrderService.class);
         WarehouseStockService wss=enhance(WarehouseStockService.class);
         Map<String,Object> resultMap=new HashMap<>(2);
-        List<Record> list=new ArrayList<>();
+        Record record1=new Record();
         String purchaseOrderState=record.getStr("purchase_order_state");
         String nextOrderState=getPurchaseOrderState(purchaseOrderState);
         String purchaseId=record.getStr("purchase_id");
@@ -87,6 +95,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             record.set("to_user_id",record.getStr("handle_id"));
         }
         JSONArray itemArray=JSONArray.parseArray(record.getStr("item"));
+        int itemLen=itemArray.size();
         Map<String,JSONArray> map=new HashMap(1);
         map.put("item",itemArray);
         String item= JSON.toJSONString(map);
@@ -99,10 +108,9 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         }
         //入库阶段
         if (StringUtils.equals(purchaseOrderState,"warehouse")){
-            list=checkMaterialIsAccepted(purchaseId);
+            record1=checkMaterialIsAccepted(purchaseId);
             //每入一次，要批量新增一次库存
             List<Record> addStockList=new ArrayList<>();
-            int itemLen=itemArray.size();
             for (int i=0;i<itemLen;i++){
                 Record stockR=new Record();
                 JSONObject jsob=itemArray.getJSONObject(i);
@@ -128,7 +136,9 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             if (isAll(purchaseId)){
                 pos.finish(purchaseId);
                 resultMap.put("flag",true);
-                resultMap.put("list",list);
+                resultMap.put("list",record1.get("list"));
+                resultMap.put("not_accepted_count",record1.get("not_accepted_count"));
+                resultMap.put("is_accepted_count",record1.get("is_accepted_count"));
                 return resultMap;
             }
         }
@@ -136,6 +146,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         purchaseOrder.set("id",purchaseId);
         //若当前阶段为采购，则更新采购单表的item字段
         if (StringUtils.equals(purchaseOrderState,"purchase")){
+            item=insertSupplierMessage(itemArray);
             purchaseOrder.set("item",item);
         }
         purchaseOrder.set("state",nextOrderState);
@@ -144,7 +155,6 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             resultMap.put("list",null);
             return resultMap;
         }
-
         //下一步骤的未完成单
         Record nextR=new Record();
         nextR.set("purchase_id",purchaseId);
@@ -163,9 +173,54 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             resultMap.put("list",null);
         }else {
             resultMap.put("flag",true);
-            resultMap.put("list",list);
+            resultMap.put("list",record1.get("list"));
+            resultMap.put("not_accepted_count",record1.get("not_accepted_count"));
+            resultMap.put("is_accepted_count",record1.get("is_accepted_count"));
         }
         return resultMap;
+    }
+
+    /**
+     * 通过item里的supplier_id查询current_price、name、num
+     * @param itemArray
+     * @return
+     */
+    public String insertSupplierMessage(JSONArray itemArray){
+        SupplierService supplierService=enhance(SupplierService.class);
+        int itemLen=itemArray.size();
+        String[]ids=new String[itemLen];
+        for (int i=0;i<itemLen;i++){
+            ids[i]=itemArray.getJSONObject(i).getString("supplier_id");
+        }
+        List<Record> supplierList=supplierService.selectByColumnIn("id",ids);
+        Map<String,Record> supplierMap=new HashMap<>(itemLen);
+        for(Record supplierR:supplierList){
+            supplierMap.put(supplierR.getStr("id"),supplierR);
+        }
+        double totalPrice=0;
+        for (int i=0;i<itemLen;i++){
+            JSONObject jsonObject=itemArray.getJSONObject(i);
+            Record record1=supplierMap.get(jsonObject.getString("supplier_id"));
+            jsonObject.put("supplier_name",record1.getStr("name"));
+            jsonObject.put("supplier_num",record1.getStr("num"));
+            String materialItems=record1.getStr("material_items");
+            JSONObject jsonObject1=JSONObject.parseObject(materialItems);
+            JSONArray jsonArray1=jsonObject1.getJSONArray("items");
+            int len1=jsonArray1.size();
+            for (int j=0;j<len1;j++){
+                if(StringUtils.equals(jsonObject.getString("id"),jsonArray1.getJSONObject(j).getString("id"))){
+                    jsonObject.put("current_price",supplierService.getMaterialPrice(jsonArray1.getJSONObject(j)));
+                    break;
+                }
+            }
+            totalPrice+=jsonObject.getDouble("current_price")*(double)Integer.parseInt(jsonObject.getString("quantity"));
+        }
+        DecimalFormat df = new DecimalFormat("#.00");
+        Map<String,Object> map=new HashMap(1);
+        map.put("item",itemArray);
+        map.put("total_price",df.format(totalPrice));
+        String item= JSON.toJSONString(map);
+        return item;
     }
 
     /**
@@ -232,7 +287,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
      * @param id 采购单id
      * @return
      */
-    public List<Record> checkMaterialIsAccepted(String id){
+    public Record checkMaterialIsAccepted(String id){
         //在流程表中找到该采购单在仓库阶段所有的记录的item
         String multipleItemSql="SELECT item FROM s_purchase_purchasereturn_process WHERE purchase_id=? AND purchase_order_state='warehouse' AND state='1'";
         //在采购单表找到采购单的item
@@ -260,15 +315,23 @@ public class PurchasePurchasereturnProcessService extends BaseService {
                 multipleItemsMap.put(singleItemArray.getJSONObject(i).getString("id"),singleItemArray.getJSONObject(i));
             }
         }
+        int count1=0;
+        int count2=0;
         //遍历totalItemList，若在multipleItemsMap中有该原料，则color为green，否则color为red
         for(Record item:totalItemList){
             if (multipleItemsMap.get(item.getStr("id"))==null){
                 item.set("is_accepted",false);
+                count1++;
             }else {
                 item.set("is_accepted",true);
+                count2++;
             }
         }
-        return totalItemList;
+        Record record=new Record();
+        record.set("list",totalItemList);
+        record.set("not_accepted_count",count1);
+        record.set("is_accepted_count",count2);
+        return record;
     }
 
     /**
