@@ -19,6 +19,7 @@
 *.js
 *.font
 *.html
+*.ttf
 web/static/css/*
 web/static/fonts/*
 web/static/js/*
