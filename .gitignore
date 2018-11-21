@@ -18,7 +18,10 @@
 *.css
 *.js
 *.font
-web/static/*
+*.html
+web/static/css/*
+web/static/fonts/*
+web/static/js/*
 !web/static/js/jquery-1.10.1.js
 
 # 我的调试文件 #
