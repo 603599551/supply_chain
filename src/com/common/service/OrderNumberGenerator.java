@@ -29,6 +29,10 @@ public class OrderNumberGenerator {
      * 仓库退货单类型
      */
     private static final String TYPE_CKTH="CKTH";
+    /**
+     * 门店订货单类型
+     */
+    private static final String TYPE_MDDH="MDDH";
 
 
     public static synchronized String getOrderNumber(String name,String remark,String type){
@@ -83,6 +87,14 @@ public class OrderNumberGenerator {
      */
     public static synchronized String getWarehouseReturnOrderNumber(){
         return getOrderNumber("仓库退货单","仓库退货编号",TYPE_CKTH);
+    }
+
+    /**
+     * 生成仓库退货单编号
+     * @return
+     */
+    public static synchronized String getStoreOrderNumber(){
+        return getOrderNumber("门店订货单","门店订货编号",TYPE_MDDH);
     }
 
 //    /**

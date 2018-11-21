@@ -17,8 +17,36 @@
     类型:<input id="types"><br>
     <input type="button" id="btn" value="测试">
 </form>
-<textarea rows="40" cols="150" id="msg"></textarea>
-
+<textarea rows="40" cols="150" id="msg"></textarea><br>
+routes.add("/mgr/works/pc/addressCtrl", AddressCtrl.class);<br>
+routes.add("/mgr/works/pc/catalogCtrl", CatalogCtrl.class);<br>
+routes.add("/mgr/works/pc/commonColorCtrl", CommonColorCtrl.class);<br>
+routes.add("/mgr/works/pc/dictionaryCtrl", DictionaryCtrl.class);<br>
+routes.add("/mgr/works/pc/goodsCtrl", GoodsCtrl.class);<br>
+routes.add("/mgr/works/pc/materialCtrl", MaterialCtrl.class);<br>
+routes.add("/mgr/works/pc/orderCtrl", OrderCtrl.class);<br>
+routes.add("/mgr/works/pc/orderNumberCtrl", OrderNumberCtrl.class);<br>
+routes.add("/mgr/works/pc/orderReturnCtrl", OrderReturnCtrl.class);<br>
+routes.add("/mgr/works/pc/orderScrapCtrl", OrderScrapCtrl.class);<br>
+routes.add("/mgr/works/pc/productCtrl", ProductCtrl.class);<br>
+routes.add("/mgr/works/pc/purchaseOrderCtrl", PurchaseOrderCtrl.class);<br>
+routes.add("/mgr/works/pc/purchasePurchasereturnProcessCtrl", PurchasePurchasereturnProcessCtrl.class);<br>
+routes.add("/mgr/works/pc/purchaseReturnCtrl", PurchaseReturnCtrl.class);<br>
+routes.add("/mgr/works/pc/storeCtrl", StoreCtrl.class);<br>
+routes.add("/mgr/works/pc/storeCountCtrl", StoreCountCtrl.class);<br>
+routes.add("/mgr/works/pc/storeProductRelationCtrl", StoreProductRelationCtrl.class);<br>
+routes.add("/mgr/works/pc/storeStockCtrl", StoreStockCtrl.class);<br>
+routes.add("/mgr/works/pc/supplierCtrl", SupplierCtrl.class);<br>
+routes.add("/mgr/works/pc/sysAuthCtrl", SysAuthCtrl.class);<br>
+routes.add("/mgr/works/pc/sysMenuCtrl", SysMenuCtrl.class);<br>
+routes.add("/mgr/works/pc/sysRolesCtrl", SysRolesCtrl.class);<br>
+routes.add("/mgr/works/pc/sysUserCtrl", SysUserCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseMovementOrderCtrl", WarehouseMovementOrderCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseOutOrderCtrl", WarehouseOutOrderCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseCtrl", WarehouseCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseCountCtrl", WarehouseCountCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseScrapCtrl", WarehouseScrapCtrl.class);<br>
+routes.add("/mgr/works/pc/warehouseStockCtrl", WarehouseStockCtrl.class);<br>
 </body>
 <script src="static/js/jquery-1.10.1.js"></script>
 <script>

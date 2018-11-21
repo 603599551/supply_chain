@@ -45,13 +45,13 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     @Override
     public void createRecordBeforeSelect(Record record) {
         String keyword = getPara("keyword");
-        if(keyword != null && keyword.length() > 0){
+        if (keyword != null && keyword.length() > 0) {
             String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
             String[] value = {keyword, keyword, keyword};
             record.set(key, value);
         }
         String[] catalogIds = getParaValues("catalog_ids");
-        if(catalogIds != null && catalogIds.length > 0){
+        if (catalogIds != null && catalogIds.length > 0) {
             String key = "$in#and#catalog_id";
             record.set(key, catalogIds);
         }
@@ -68,7 +68,7 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     /**
      * 获取带有分类的商品树
      */
-    public void getProductTree(){
+    public void getProductTree() {
         Record record = getParaRecord();
         JsonHashMap jhm = new JsonHashMap();
         Record root = service.getProductCatalogTree(record);
@@ -79,14 +79,14 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     /**
      * 修改商品bom接口
      */
-    public void updateBom(){
+    public void updateBom() {
         JsonHashMap jhm = new JsonHashMap();
         JSONObject json = getJson(getRequest());
         try {
             boolean flag = service.updateBom(json);
-            if(flag){
+            if (flag) {
                 jhm.putMessage("更新bom成功！");
-            }else{
+            } else {
                 jhm.putFail("更新bom失败！");
             }
         } catch (PcException e) {
@@ -96,12 +96,15 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
         renderJson(jhm);
     }
 
-    public void getProductUnit(){
+    /**
+     * 获取商品单位
+     */
+    public void getProductUnit() {
         JsonHashMap jhm = new JsonHashMap();
         try {
             List<Record> unitList = service.getProductUnit();
             jhm.putSuccess(unitList);
-        }catch (PcException e){
+        } catch (PcException e) {
             e.printStackTrace();
             jhm.putFail(e.getMsg());
         }
@@ -111,14 +114,14 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
     /**
      * 通过id删除商品
      */
-    public void deleteById(){
+    public void deleteById() {
         JsonHashMap jhm = new JsonHashMap();
         String id = getPara("id");
         try {
             String msg = service.deleteById(id);
-            if(msg != null){
+            if (msg != null) {
                 jhm.putMessage(msg);
-            }else{
+            } else {
                 jhm.putMessage("删除成功！");
             }
         } catch (PcException e) {
@@ -128,11 +131,14 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
         renderJson(jhm);
     }
 
-    public void getProductNoCatalogTree(){
+    /**
+     * 获取没有分类的商品树
+     */
+    public void getProductNoCatalogTree() {
         JsonHashMap jhm = new JsonHashMap();
         Record record = getParaRecord();
         String keyword = record.getStr("keyword");
-        if(keyword != null && keyword.trim().length() > 0){
+        if (keyword != null && keyword.trim().length() > 0) {
             String key = "$all$and#name$like$or#pinyin$like$or#num$like$or";
             String[] value = {keyword, keyword, keyword};
             record.set(key, value);
@@ -143,6 +149,18 @@ public class ProductCtrl extends BaseCtrl<ProductService> {
         List<Record> result = root.get("children") != null ? root.get("children") : new ArrayList<>();
         jhm.putSuccess(result);
         renderJson(jhm);
+    }
+
+    /**
+     * 获取订货时的商品树
+     */
+    public void getOrderProductTree() {
+        JsonHashMap jhm = new JsonHashMap();
+        Record record = getParaRecord();
+        UserSessionUtil usu = new UserSessionUtil(getRequest());
+        Record root = service.getOrderProductTree(record, usu);
+        jhm.putSuccess(root);
+        renderJson(root);
     }
 
 }

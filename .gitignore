@@ -19,6 +19,7 @@
 *.js
 *.font
 web/static/*
+!web/static/js/jquery-1.10.1.js
 
 # 我的调试文件 #
 my/*

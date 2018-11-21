@@ -19,6 +19,7 @@ import com.works.pc.warehourse.services.WarehouseStockService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 该类实现以下功能：
@@ -160,6 +161,20 @@ public class CatalogService extends BaseService {
         }
         BeanUtils.createEmulationalTree(root,list);
         return list;
+    }
+
+
+    public List<Record> getRenameCatalogList(String type, Map<String, String> columnMap){
+        String sql = "select {{columnMapSql}} c.*,c.name search_text from s_catalog c where c.type=?";
+        StringBuilder columMapSql = new StringBuilder("");
+        if(columnMap != null && columnMap.size() > 0){
+            for(Map.Entry<String, String> entry : columnMap.entrySet()){
+                columMapSql.append("c." + entry.getValue() + " " + entry.getKey() + ",");
+            }
+        }
+        sql = sql.replace("{{columnMapSql}}", columMapSql);
+        List<Record> catalogList = Db.find(sql, type);
+        return catalogList;
     }
 
 }

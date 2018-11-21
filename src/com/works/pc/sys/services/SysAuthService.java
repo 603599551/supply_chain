@@ -2,6 +2,7 @@ package com.works.pc.sys.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
@@ -9,7 +10,9 @@ import com.utils.DateUtil;
 import com.utils.UUIDTool;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SysAuthService extends BaseService {
 
@@ -22,12 +25,19 @@ public class SysAuthService extends BaseService {
     }
 
     public boolean addAssignRoleAuth(String roleId, String[] menuIdArr){
+        SysMenuService sysMenuService = enhance(SysMenuService.class);
         boolean result = false;
+        Record sysMenu = new Record();
+        sysMenu.set("$in#and#id", menuIdArr);
+        Set<String> menuIdSet = new HashSet<>();
+        getMenuIds(sysMenuService, menuIdSet, menuIdArr);
+        getMenuIds(sysMenuService, menuIdSet, menuIdSet.toArray(new String[menuIdSet.size()]));
+        menuIdSet.remove("0");
         String deleteAuthSql = "delete from s_sys_auth where role_id=?";
         Db.delete(deleteAuthSql, roleId);
-        if (menuIdArr != null && menuIdArr.length > 0) {
+        if (menuIdSet != null && menuIdSet.size() > 0) {
             List<Record> sysAuthList = new ArrayList<>();
-            for (String s : menuIdArr) {
+            for (String s : menuIdSet) {
                 Record r = new Record();
                 r.set("id", UUIDTool.getUUID());
                 r.set("menu_id", s);
@@ -38,6 +48,22 @@ public class SysAuthService extends BaseService {
             result = Db.batchSave("s_sys_auth", sysAuthList, sysAuthList.size()) != null;
         }
         return result;
+    }
+
+    public void getMenuIds(SysMenuService sysMenuService, Set<String> menuIdSet, String[] menuIdArr){
+        Record sysMenu = new Record();
+        sysMenu.set("$in#and#id", menuIdArr);
+        try {
+            List<Record> menuList = sysMenuService.list(sysMenu);
+            if(menuList != null && menuList.size() > 0){
+                for(Record r : menuList){
+                    menuIdSet.add(r.getStr("id"));
+                    menuIdSet.add(r.getStr("parent_id"));
+                }
+            }
+        } catch (PcException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

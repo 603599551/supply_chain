@@ -31,13 +31,9 @@ public class SysRolesService extends BaseService {
         if(result == null){
             throw new PcException(SELECT_EXCEPTION, "没有查到数据！");
         }
-        String selectSql = "select * from s_sys_auth sa, s_sys_menu sm where sa.menu_id=sm.id and sa.role_id=?";
+        String selectSql = "select * from s_sys_auth sa, s_sys_menu sm where sa.menu_id=sm.id and sa.role_id=? and sm.level=3";
         List<Record> menuList = Db.find(selectSql, id);
         if(menuList != null && menuList.size() > 0){
-            Record root = new Record();
-            root.set("id", "0");
-            BeanUtils.createTree(root, menuList);
-            result.set("auth_tree", root);
             List<String> menuIdList = new ArrayList<>(menuList.size());
             for(Record r : menuList){
                 menuIdList.add(r.get("menu_id"));

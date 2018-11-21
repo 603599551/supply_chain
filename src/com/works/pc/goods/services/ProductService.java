@@ -3,22 +3,21 @@ package com.works.pc.goods.services;
 import com.alibaba.fastjson.JSONObject;
 import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.OrderNumberGenerator;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
-import com.utils.BeanUtils;
+import com.utils.*;
 import com.works.pc.order.services.OrderService;
 import com.works.pc.purchase.services.PurchaseOrderService;
 import com.works.pc.store.services.StoreProductRelationService;
 import com.works.pc.store.services.StoreStockService;
 import com.works.pc.supplier.services.SupplierService;
+import com.works.pc.sys.services.CatalogService;
 import com.works.pc.warehourse.services.WarehouseStockService;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ProductService extends BaseService {
 
@@ -82,8 +81,11 @@ public class ProductService extends BaseService {
      */
     public Record getProductCatalogTree(Record record) {
         List<Record> allList = new ArrayList<>();
-
-        List<Record> catalogList = Db.find("select c.*,c.name search_text,c.id catalog_cid, c.parent_id catalog_pid from s_catalog c where c.type=?", "product");
+        CatalogService catalogService = enhance(CatalogService.class);
+        Map<String, String> columnsMap = new HashMap<>();
+        columnsMap.put("catalog_cid", "id");
+        columnsMap.put("catalog_pid", "parent_id");
+        List<Record> catalogList = catalogService.getRenameCatalogList("product", columnsMap);
         if (catalogList != null && catalogList.size() > 0) {
             for (Record r : catalogList) {
                 r.set("showChild", false);
@@ -140,6 +142,11 @@ public class ProductService extends BaseService {
         return Db.update(this.tableName, update);
     }
 
+    /**
+     * 获取商品单位
+     * @return
+     * @throws PcException
+     */
     public List<Record> getProductUnit() throws PcException {
         List<Record> result = new ArrayList<>();
         List<Record> unitList = Db.find("SELECT DISTINCT M.UNIT UNIT FROM S_PRODUCT M");
@@ -233,8 +240,6 @@ public class ProductService extends BaseService {
 
     public Record getProductNoCatalogTree(Record record){
         //$all$and#name$like$or#pinyin$like$or#num$like$or
-        String childSql = "select * from s_product where 1=1 and parent_id<>0 and name like ? or pinyin like ? or num like ?";
-        String parentSql = "select * from s_product where id in({{wildcard}) or (name like ? or pinyin like ? or num like ?)";
         Record root = new Record();
         root.set("id", "0");
         try {
@@ -254,11 +259,21 @@ public class ProductService extends BaseService {
                 List<Record> parentList = this.list(parent);
                 List<Record> allList = new ArrayList<>(parentList);
                 allList.addAll(childList);
+                if(allList != null && allList.size() > 0){
+                    for(Record r : allList){
+                        r.set("showChild", false);
+                    }
+                }
                 BeanUtils.createTree(root, allList);
             }else{
                 record.remove("$<>#and#parent_id");
                 record.set("parent_id", "0");
                 List<Record> parentList = this.list(record);
+                if(parentList != null && parentList.size() > 0){
+                    for(Record r : parentList){
+                        r.set("showChild", false);
+                    }
+                }
                 BeanUtils.createTree(root, parentList);
             }
         } catch (PcException e) {
@@ -266,4 +281,31 @@ public class ProductService extends BaseService {
         }
         return root;
     }
+
+    /**
+     * 获取订货时的商品树
+     */
+    public Record getOrderProductTree(Record record, UserSessionUtil usu){
+        CatalogService catalogService = enhance(CatalogService.class);
+        Map<String, String> columnsMap = new HashMap<>();
+        columnsMap.put("catalog_cid", "id");
+        columnsMap.put("catalog_pid", "parent_id");
+        List<Record> catalogList = catalogService.getRenameCatalogList("product", columnsMap);
+        String productSelect = "select p.*,p.catalog_id catalog_pid, '' catalog_cid from s_product p, s_store_product_relation spr where p.id=spr.product_id and p.state=? and spr.store_id=?";
+        List<Record> productList = Db.find(productSelect, "1", usu.getUserBean().get("store_id"));
+        if(productList != null && productList.size() > 0){
+            for(Record r : productList){
+                r.remove("bom");
+                String searchText = r.getStr("parent_name") + "-" + r.getStr("num") + "-" + HanyuPinyinHelper.getFirstLettersLo(r.getStr("parent_name"));
+                r.set("search_text", searchText);
+            }
+        }
+        List<Record> allList = new ArrayList<>(catalogList);
+        allList.addAll(productList);
+        Record root = new Record();
+        root.set("catalog_cid", "0");
+        BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
+        return root;
+    }
+
 }
