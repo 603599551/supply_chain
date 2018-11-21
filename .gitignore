@@ -18,6 +18,9 @@
 *.css
 *.js
 *.font
+*.map
+*.ttf
+*.html
 
 # 我的调试文件 #
 my/*
