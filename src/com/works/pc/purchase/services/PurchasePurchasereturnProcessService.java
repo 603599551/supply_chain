@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.utils.BeanUtils.recordListToMapList;
+
 /**
  * 该类实现采购流程、采购退货流程
  * @author CaryZ
@@ -55,8 +57,8 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         for (Record r:list){
             if (!StringUtils.equals(r.getStr("purchase_order_state"),"warehouse")){
                 JSONObject jsonObject=JSONObject.parseObject(r.getStr("item"));
-                JSONArray jsonArray=jsonObject.getJSONArray("item");
-                r.set("item", jsonArray);
+                r.set("item", jsonObject.getJSONArray("item"));
+                r.set("total_price",jsonObject.getDoubleValue("total_price"));
             }
         }
         return page;
@@ -106,9 +108,12 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             resultMap.put("list",null);
             return resultMap;
         }
+        //即将更新的采购单
+        Record purchaseOrder=new Record();
         //入库阶段
         if (StringUtils.equals(purchaseOrderState,"warehouse")){
             record1=checkMaterialIsAccepted(purchaseId);
+            List<Record> purchaseOrderItems=pos.queryFromPurchaseOrder(purchaseId).get("item");
             //每入一次，要批量新增一次库存
             List<Record> addStockList=new ArrayList<>();
             for (int i=0;i<itemLen;i++){
@@ -126,7 +131,18 @@ public class PurchasePurchasereturnProcessService extends BaseService {
                 stockR.set("material_data", jsob.toJSONString());
                 stockR.set("material_id", jsob.get("id"));
                 addStockList.add(stockR);
+                for (Record record2:purchaseOrderItems){
+                    if (StringUtils.equals(stockR.getStr("material_id"),record2.getStr("id"))){
+                        record2.set("is_accepted","true");
+                        break;
+                    }
+                }
             }
+            List<Map<String,Object>>mapList2=recordListToMapList(purchaseOrderItems);
+            JSONArray jsonArray2=JSONArray.parseArray(JSONArray.toJSONString(mapList2));
+            Map<String,JSONArray> map2=new HashMap(1);
+            map.put("items",jsonArray2);
+            purchaseOrder.set("item",JSON.toJSONString(map2));
             if (!wss.batchSave(addStockList)){
                 resultMap.put("flag",false);
                 resultMap.put("list",null);
@@ -142,12 +158,18 @@ public class PurchasePurchasereturnProcessService extends BaseService {
                 return resultMap;
             }
         }
-        Record purchaseOrder=new Record();
         purchaseOrder.set("id",purchaseId);
-        //若当前阶段为采购，则更新采购单表的item字段
+        //若当前阶段为采购，则更新采购单表的item字段的供应商id，编号，姓名，价格
         if (StringUtils.equals(purchaseOrderState,"purchase")){
             item=insertSupplierMessage(itemArray);
             purchaseOrder.set("item",item);
+            //若当前阶段为老板，则更新采购单表的item字段的原料接收状态都是未接收
+        }else if (StringUtils.equals(purchaseOrderState,"boss")){
+            for (int i=0;i<itemLen;i++){
+                itemArray.getJSONObject(i).put("is_accepted","false");
+            }
+            map.put("item",itemArray);
+            purchaseOrder.set("item",JSON.toJSONString(map));
         }
         purchaseOrder.set("state",nextOrderState);
         if (!pos.updateById(purchaseOrder)){
