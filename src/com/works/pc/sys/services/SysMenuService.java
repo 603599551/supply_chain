@@ -14,7 +14,7 @@ public class SysMenuService extends BaseService {
 
     private static String[] columnNameArr = {"id", "name", "url", "parent_id", "sort", "icon", "level", "remark"};
     private static String[] columnTypeArr = {"VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "INT", "VARCHAR", "INT", "VARCHAR"};
-    private static String[] columnCommentArr = {"", "", "", "", "", "", ""};
+    private static String[] columnCommentArr = {"", "", "", "", "", "", "", ""};
 
     public SysMenuService() {
         super("s_sys_menu", new TableBean("s_sys_menu", columnNameArr, columnTypeArr, columnCommentArr));
