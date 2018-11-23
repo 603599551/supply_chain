@@ -28,6 +28,8 @@ public class DictionaryConstants {
     public static final String PURCHASE_PROCESS_TYPE = "purchase_process_type";
     //商品类型
     public static final String PRODUCT_TYPE = "product_type";
+    //门店退货单状态
+    public static final String STORE_RETURN_TYPE="store_return_type";
 
 
 
