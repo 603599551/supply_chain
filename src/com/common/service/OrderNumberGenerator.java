@@ -1,7 +1,6 @@
 package com.common.service;
 
 import com.jfinal.plugin.activerecord.Db;
-import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.DateUtil;
 
@@ -33,6 +32,10 @@ public class OrderNumberGenerator {
      * 门店订货单类型
      */
     private static final String TYPE_MDDH="MDDH";
+    /**
+     * 门店退货单类型
+     */
+    private static final String TYPE_MDTH="MDTH";
 
 
     public static synchronized String getOrderNumber(String name,String remark,String type){
@@ -66,7 +69,7 @@ public class OrderNumberGenerator {
     }
 
     /**
-     * 生成门店盘点编号
+     * 生成门店盘点单编号
      * @return
      */
     public static synchronized String getStoreCountOrderNumber(){
@@ -90,11 +93,19 @@ public class OrderNumberGenerator {
     }
 
     /**
-     * 生成仓库退货单编号
+     * 生成门店订货单编号
      * @return
      */
     public static synchronized String getStoreOrderNumber(){
         return getOrderNumber("门店订货单","门店订货编号",TYPE_MDDH);
+    }
+
+    /**
+     * 生成门店退货单编号
+     * @return
+     */
+    public static synchronized String getStoreOrderReturnNumber(){
+        return getOrderNumber("门店退货单","门店退货编号",TYPE_MDTH);
     }
 
 //    /**
