@@ -1,9 +1,9 @@
 package com.works.pc.store.services;
 
-import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
@@ -11,15 +11,18 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
+import com.utils.NumberUtils;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
-import com.alibaba.fastjson.JSONArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.utils.NumberUtils.getMoney;
+import static com.utils.UnitConversion.smallUnit2outUnitDecil;
 
 /**
  * 该类操作门店库存表，实现新增和修改功能
@@ -51,7 +54,12 @@ public class StoreStockService extends BaseService {
     public Page<Record> queryBeforeReturn(Page<Record> page) {
         List<Record> list=page.getList();
         for (Record r:list){
-            r.set("material_data",JSONObject.parseObject(r.getStr("material_data")));
+            JSONObject jsonObject=JSONObject.parseObject(r.getStr("material_data"));
+            r.set("material_data",jsonObject);
+            Record record1=BeanUtils.jsonToRecord(jsonObject);
+            record1.set("quantity",r.getStr("quantity"));
+            double quantity=getMoney(smallUnit2outUnitDecil(record1));
+            r.set("quantity",quantity);
         }
         return page;
      }
@@ -91,8 +99,6 @@ public class StoreStockService extends BaseService {
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             Record materialR=materialMap.get(countItem.getStr("id"));
-            //门店入库，不需要更新material_data
-//            countItem.set("material_data",materialR.toString());
             countItem.set("id",countItem.getStr("stock_id"));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",countItem.getStr("current_quantity"));
@@ -102,6 +108,37 @@ public class StoreStockService extends BaseService {
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
     }
+
+    /**
+     * 物流接收退货，根据order_item里的store_stock_id、要退的数量current_quantity（出库单位）、门店库存现有的数量quantity（出库单位）减少门店库存的quantity
+     * 物流退回，增加门店库存
+     * @author CaryZ
+     * @date 2018-11-24
+     * @return
+     */
+    public boolean batchUpdate(JSONArray jsonArray,boolean isAdd){
+        int len=jsonArray.size();
+        //要更新的库存信息
+        List<Record> itemList=new ArrayList<>(len);
+        for (int i=0;i<len;i++){
+            Record jsonR= BeanUtils.jsonToRecord(jsonArray.getJSONObject(i));
+            Record record=new Record();
+            record.set("id",jsonR.getStr("store_stock_id"));
+            double finalQuantity=0.0;
+            if (isAdd){
+                finalQuantity=jsonR.getDouble("quantity")+jsonR.getDouble("current_quantity");
+            }else {
+                finalQuantity=jsonR.getDouble("quantity")-jsonR.getDouble("current_quantity");
+            }
+            jsonR.set("final_quantity",finalQuantity);
+            double quantity=UnitConversion.outUnit2SmallUnitDecil(jsonR,"final_quantity");
+            //保留2位小数
+            record.set("quantity", NumberUtils.getMoney(quantity));
+            itemList.add(record);
+        }
+        return Db.batchUpdate(TABLENAME,"id",itemList,len)==null? false:true;
+    }
+
 
     /**
      * @deprecated 业务逻辑发生变化，弃用该方法
