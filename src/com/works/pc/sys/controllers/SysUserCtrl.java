@@ -12,6 +12,7 @@ import com.works.pc.sys.services.SysUserService;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 public class SysUserCtrl extends BaseCtrl<SysUserService> {
 
@@ -20,6 +21,18 @@ public class SysUserCtrl extends BaseCtrl<SysUserService> {
     }
 
     private SysUserService service = enhance(SysUserService.class);
+
+    public void getToUsers(){
+        JsonHashMap jhm=new JsonHashMap();
+        String name=getPara("name");
+        List<Record> users=service.getToUsers(name);
+        if (users==null||users.size()==0){
+            jhm.putFail("该角色信息为空！");
+        }else {
+            jhm.putSuccess(users);
+        }
+        renderJson(jhm);
+    }
     /**
      * 修改自己密码
      */
