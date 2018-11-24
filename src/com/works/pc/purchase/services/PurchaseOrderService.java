@@ -3,8 +3,8 @@ package com.works.pc.purchase.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -14,7 +14,6 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
 import com.utils.DateUtil;
-import com.utils.StringUtil;
 import com.works.pc.warehourse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
@@ -75,10 +74,20 @@ public class PurchaseOrderService extends BaseService {
         JSONArray jsonArray=jsonObject.getJSONArray("item");
         int len=jsonArray.size();
         List<Record> list=new ArrayList<>(len);
+        List<Record> notAcceptedList=new ArrayList<>();
         for (int i=0;i<len;i++){
-            list.add(BeanUtils.jsonToRecord(jsonArray.getJSONObject(i)));
+            Record record1=BeanUtils.jsonToRecord(jsonArray.getJSONObject(i));
+            if (StringUtils.equals(record1.getStr("is_accepted"),"false")) {
+                notAcceptedList.add(record1);
+            }else{
+                list.add(record1);
+            }
         }
-        record.set("item",list);
+        int acceptedLen=list.size();
+        for(int i=0;i<acceptedLen;i++){
+            notAcceptedList.add(list.get(i));
+        }
+        record.set("item",notAcceptedList);
         return record;
      }
 
@@ -97,16 +106,6 @@ public class PurchaseOrderService extends BaseService {
         String purchaseType="";
         //采购单备注
         String remark="";
-//        if (!StringUtils.isEmpty(record.getStr("from_purchase_order_id"))) {
-//            Record lastOrder=this.findById(record.getStr("from_purchase_order_id"));
-//            item=lastOrder.getStr("item");
-//            record.set("item",item);
-//            record.set("city",lastOrder.getStr("city"));
-//            remark=lastOrder.getStr("remark");
-//            record.set("remark",remark);
-//            purchaseType=lastOrder.getStr("purchase_type");
-//            record.set("purchase_type",purchaseType);
-//        }else {
         JSONArray jsonArray=JSONArray.parseArray(record.getStr("item"));
         Map<String,JSONArray> map=new HashMap(1);
         map.put("item",jsonArray);
@@ -252,7 +251,10 @@ public class PurchaseOrderService extends BaseService {
             String orderState=processR.getStr("purchase_order_state");
             String state=processR.getStr("state");
             JSONObject stageItemObject=JSONObject.parseObject(processR.getStr("item"));
-            JSONArray stageItemArray=stageItemObject.getJSONArray("item");
+            JSONArray stageItemArray=new JSONArray();
+            if (stageItemObject!=null){
+                stageItemArray=stageItemObject.getJSONArray("item");
+            }
             int stageLen=stageItemArray.size();
             Record stageR=new Record();
             if (StringUtils.isEmpty(processR.getStr("handle_date"))){
@@ -268,18 +270,6 @@ public class PurchaseOrderService extends BaseService {
             //物流、采购
             if (StringUtils.equals(orderState,"logistics")||StringUtils.equals(orderState,"purchase")){
                 if (StringUtils.equals(state,"1")){
-//                    for (int i=0;i<stageLen;i++){
-//                        Record messageR=new Record();
-//                        JSONObject jsob=stageItemArray.getJSONObject(i);
-//                        messageR.set("num",jsob.getString("num"));
-//                        messageR.set("name",jsob.getString("name"));
-//                        if (StringUtils.equals(orderState,"purchase")){
-//                            messageR.set("current_price",jsob.getString("current_price"));
-//                        }else {
-//                            messageR.set("quantity",jsob.getString("quantity"));
-//                        }
-//                        messageList.add(messageR);
-//                    }
                     Record messageR=new Record();
                     messageR.set("length",stageLen);
                     if (StringUtils.equals(orderState,"purchase")){
@@ -316,7 +306,7 @@ public class PurchaseOrderService extends BaseService {
                 }
                 finalList.add(stageR);
             }else {//仓库入库
-                if (stageItemArray!=null&stageLen>0){
+                if (stageItemArray!=null&&stageLen>0){
                     Map<String,String> batchNumMap=getbatchNumMap(stageLen,purchaseId,stageItemArray);
                     for (int i=0;i<stageLen;i++){
                         Record messageR=new Record();

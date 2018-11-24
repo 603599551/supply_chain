@@ -2,17 +2,19 @@ package com.works.pc.purchase.controllers;
 
 import com.alibaba.fastjson.JSONObject;
 import com.common.controllers.BaseCtrl;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.BeanUtils;
-import com.utils.DateUtil;
 import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.purchase.services.PurchaseReturnService;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
+
+import static com.constants.DictionaryConstants.PURCHASE_RETURN_TYPE;
 
 /**
  * 该类实现以下功能：
@@ -33,7 +35,7 @@ public class PurchaseReturnCtrl extends BaseCtrl<PurchaseReturnService> {
 
     @Override
     public void handleRecord(Record record) {
-
+        record.set("order_state_text", DictionaryConstants.DICT_STRING_MAP.get(PURCHASE_RETURN_TYPE).get(record.getStr("order_state")));
     }
 
     @Override
@@ -113,6 +115,23 @@ public class PurchaseReturnCtrl extends BaseCtrl<PurchaseReturnService> {
             }else{
                 jhm.putFail("关闭失败！");
             }
+        } catch (PcException e) {
+            e.printStackTrace();
+            jhm.putError(e.getMsg());
+        }
+        renderJson(jhm);
+    }
+
+    /**
+     * 通过采购单id显示采购项+总金额+流程日志
+     * @author CaryZ
+     * @date 2018-11-14
+     */
+    public void showPurchaseReturnOrderById(){
+        JsonHashMap jhm = new JsonHashMap();
+        String id=getPara("id");
+        try {
+            jhm.putSuccess(service.showPurchaseReturnOrderById(id));
         } catch (PcException e) {
             e.printStackTrace();
             jhm.putError(e.getMsg());

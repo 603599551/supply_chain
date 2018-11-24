@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.utils.BeanUtils.recordListToMapList;
+import static com.utils.NumberUtils.getMoney;
 
 /**
  * 该类实现采购流程、采购退货流程
@@ -38,9 +39,9 @@ public class PurchasePurchasereturnProcessService extends BaseService {
     private static final String TABLENAME="s_purchase_purchasereturn_process";
     private static String[] purchaseOrderState={"logistics","purchase","finance","boss","warehouse","shutdown","finish"};
     private static String[] purchaseReturnState={"logistics_clearance","purchase_audit","finance_confirm","logistics_delivery","return_finish","return_shutdown"};
-    private static String[] columnNameArr = {"id","purchase_id","num","handle_id","handle_date","purchase_type","remark","parent_id","to_user_id","state","item","purchase_order_state"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR"};
-    private static String[] columnCommentArr = {"","","","","","","","","","","",""};
+    private static String[] columnNameArr = {"id","purchase_id","purchase_return_id","num","handle_id","handle_date","purchase_type","remark","parent_id","to_user_id","state","item","purchase_order_state"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR"};
+    private static String[] columnCommentArr = {"","","","","","","","","","","","",""};
 
     public PurchasePurchasereturnProcessService() {
         super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
@@ -85,7 +86,6 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         PurchaseOrderService pos=enhance(PurchaseOrderService.class);
         WarehouseStockService wss=enhance(WarehouseStockService.class);
         Map<String,Object> resultMap=new HashMap<>(2);
-        Record record1=new Record();
         String purchaseOrderState=record.getStr("purchase_order_state");
         String nextOrderState=getPurchaseOrderState(purchaseOrderState);
         String purchaseId=record.getStr("purchase_id");
@@ -102,6 +102,10 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         map.put("item",itemArray);
         String item= JSON.toJSONString(map);
         record.set("item",item);
+        //在item字段中加入总价total_price和供应商信息
+        if (!StringUtils.equals(purchaseOrderState,"logistics")||!StringUtils.equals(purchaseOrderState,"warehouse")){
+            item=insertSupplierMessage(itemArray);
+        }
         //更新流程表的本次记录“完成”
         if (!super.updateById(record)){
             resultMap.put("flag",false);
@@ -112,7 +116,6 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         Record purchaseOrder=new Record();
         //入库阶段
         if (StringUtils.equals(purchaseOrderState,"warehouse")){
-            record1=checkMaterialIsAccepted(purchaseId);
             List<Record> purchaseOrderItems=pos.queryFromPurchaseOrder(purchaseId).get("item");
             //每入一次，要批量新增一次库存
             List<Record> addStockList=new ArrayList<>();
@@ -126,7 +129,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
                 stockR.set("purchase_order_num", record.getStr("num"));
                 stockR.set("state", "1");
                 //将JSONObject对象转为Record，再将提货单位数量->最小单位数量
-                stockR.set("quantity", UnitConversion.outUnit2SmallUnit(BeanUtils.jsonToRecord(jsob)));
+                stockR.set("quantity", UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob)));
                 stockR.set("batch_num", jsob.get("batch_num"));
                 stockR.set("material_data", jsob.toJSONString());
                 stockR.set("material_id", jsob.get("id"));
@@ -140,21 +143,17 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             }
             List<Map<String,Object>>mapList2=recordListToMapList(purchaseOrderItems);
             JSONArray jsonArray2=JSONArray.parseArray(JSONArray.toJSONString(mapList2));
-            Map<String,JSONArray> map2=new HashMap(1);
-            map.put("items",jsonArray2);
+            Map<String,JSONArray> map2=new HashMap();
+            map2.put("item",jsonArray2);
             purchaseOrder.set("item",JSON.toJSONString(map2));
             if (!wss.batchSave(addStockList)){
                 resultMap.put("flag",false);
-                resultMap.put("list",null);
                 return resultMap;
             }
             //若仓库接收完全部货物，则不创建下一流程记录，将有关记录全部标记为完成
             if (isAll(purchaseId)){
                 pos.finish(purchaseId);
                 resultMap.put("flag",true);
-                resultMap.put("list",record1.get("list"));
-                resultMap.put("not_accepted_count",record1.get("not_accepted_count"));
-                resultMap.put("is_accepted_count",record1.get("is_accepted_count"));
                 return resultMap;
             }
         }
@@ -192,12 +191,8 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         nextR.set("state","0");
         if (super.add(nextR)==null){
             resultMap.put("flag",false);
-            resultMap.put("list",null);
         }else {
             resultMap.put("flag",true);
-            resultMap.put("list",record1.get("list"));
-            resultMap.put("not_accepted_count",record1.get("not_accepted_count"));
-            resultMap.put("is_accepted_count",record1.get("is_accepted_count"));
         }
         return resultMap;
     }
@@ -305,6 +300,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
     }
 
     /**
+     * @deprecated
      * 区分item里的每种原料是否被接收
      * @param id 采购单id
      * @return
@@ -376,6 +372,15 @@ public class PurchasePurchasereturnProcessService extends BaseService {
     /******************************************************以下为采购退货流程部分*************************************************************************/
 
     /**
+     * 通过采购退货单id查询所有流程，按操作时间正序排
+     * @param purchaseReturnId
+     * @return
+     */
+    public List<Record> getReturnProcessForOneOrder(String purchaseReturnId){
+        return Db.find("SELECT p.*,u.nickname FROM s_purchase_purchasereturn_process p,s_sys_user u WHERE p.purchase_return_id=? AND p.handle_id=u.id ORDER BY IF(ISNULL(p.handle_date),1,0),p.handle_date",purchaseReturnId);
+    }
+
+    /**
      * 新建采购退货单时，在流程表批量新增记录
      * @author CaryZ
      * @date 2018-11-17
@@ -383,12 +388,12 @@ public class PurchasePurchasereturnProcessService extends BaseService {
      * @param returnItemList 批量新增的退货单
      * @return 新增成功/失败 true/false
      */
-    public boolean batchSaveReturnProcess(Record record,List<Record> returnItemList)throws PcException{
+    public List<Record> batchSaveReturnProcess(Record record,List<Record> returnItemList)throws PcException{
         List<Record> returnProcessList=new ArrayList<>();
         for (Record record1:returnItemList){
             Record record2=new Record();
             record2.set("id",UUIDTool.getUUID());
-            record2.set("purchase_id",record1.getStr("id"));
+            record2.set("purchase_return_id",record1.getStr("id"));
             record2.set("num",record1.getStr("num"));
             record2.set("item",record1.getStr("return_item"));
             record2.set("handle_id",record.getStr("handle_id"));
@@ -399,7 +404,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             //update的时候更新remark,to_user_id,state
         }
         try{
-            return Db.batchSave(TABLENAME,returnProcessList,returnProcessList.size())==null? false:true;
+            return Db.batchSave(TABLENAME,returnProcessList,returnProcessList.size())==null? null:returnProcessList;
         }catch (Exception e){
             throw new PcException(ADD_EXCEPTION,e.getMessage());
         }
@@ -423,12 +428,22 @@ public class PurchasePurchasereturnProcessService extends BaseService {
     }
 
     /**
+     * 通过采购退货单ID得到物流人ID
+     * @param purchaseId
+     * @return 物流人ID
+     */
+    public String getReturnLogisticsId(String purchaseId){
+        Record record= Db.findFirst("SELECT handle_id FROM s_purchase_purchasereturn_process WHERE parent_id='0' AND purchase_return_id=?",purchaseId);
+        return record==null? null:record.getStr("handle_id");
+    }
+
+    /**
      * 通过退货单ID得到财务人ID
      * @param purchaseId
      * @return 财务人ID
      */
     public String getFinanceId(String purchaseId){
-        Record record= Db.findFirst("SELECT handle_id FROM s_purchase_purchasereturn_process WHERE purchase_id=? AND purchase_order_state='finance_confirm'",purchaseId);
+        Record record= Db.findFirst("SELECT handle_id FROM s_purchase_purchasereturn_process WHERE purchase_return_id=? AND purchase_order_state='finance_confirm'",purchaseId);
         return record==null? null:record.getStr("handle_id");
     }
 
@@ -447,10 +462,10 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         WarehouseStockService wss=enhance(WarehouseStockService.class);
         String purchaseOrderState=record.getStr("purchase_order_state");
         String nextOrderState=getPurchaseReturnState(purchaseOrderState);
-        String purchaseId=record.getStr("purchase_id");
+        String purchaseId=record.getStr("purchase_return_id");
         if (StringUtils.equals(purchaseOrderState,"finance_confirm")){
             //财务确认的下一处理人设置为物流
-            record.set("to_user_id",getLogisticsId(purchaseId));
+            record.set("to_user_id",getReturnLogisticsId(purchaseId));
         }else if (StringUtils.equals(purchaseOrderState,"logistics_delivery")){
             //物流发货的下一处理人设置为财务
             record.set("to_user_id",getFinanceId(purchaseId));
@@ -458,7 +473,11 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         //更新退货单状态
         Record purchaseReturnOrder=new Record();
         purchaseReturnOrder.set("id",purchaseId);
-        purchaseReturnOrder.set("order_state",nextOrderState);
+        if (!StringUtils.equals(purchaseOrderState,"return_finish")){
+            purchaseReturnOrder.set("order_state",nextOrderState);
+        }else {
+            purchaseReturnOrder.set("order_state",purchaseOrderState);
+        }
         if (StringUtils.equals(purchaseOrderState,"logistics_clearance")){
             purchaseReturnOrder.set("remark",record.getStr("remark"));
             purchaseReturnOrder.set("image",record.getStr("image"));
@@ -471,6 +490,12 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         if (StringUtils.equals(purchaseOrderState,"logistics_clearance")){
             record.remove("image","return_reason");
         }
+        //将item的JSON对象数组转化为JSON字符串
+//        Map<String,JSONArray> itemMap=new HashMap();
+//        itemMap.put("item",record.get("item"));
+//        String item=JSON.toJSONString(itemMap);
+        String item=insertTotalPrice(record.get("item"));
+        record.set("item",item);
         if (!super.updateById(record)){
             return false;
         }
@@ -484,9 +509,9 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         if (!StringUtils.equals(purchaseOrderState,"return_finish")){
             //下一步骤的未完成单
             Record nextR=new Record();
-            nextR.set("purchase_id",purchaseId);
+            nextR.set("purchase_return_id",purchaseId);
             nextR.set("num",record.getStr("num"));
-            nextR.set("item",record.getStr("item"));
+            nextR.set("item",item);
             nextR.set("handle_id",record.getStr("to_user_id"));
             nextR.set("purchase_order_state",nextOrderState);
             nextR.set("parent_id",record.getStr("id"));
@@ -494,5 +519,24 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             return super.add(nextR)==null? false:true;
         }
         return true;
+    }
+
+    /**
+     * 通过item里的current_price和current_quantity得到total_price
+     * @param itemArray
+     * @return
+     */
+    public String insertTotalPrice(JSONArray itemArray){
+        double totalPrice=0;
+        int itemLen=itemArray.size();
+        for (int i=0;i<itemLen;i++){
+            JSONObject jsonObject=itemArray.getJSONObject(i);
+            totalPrice+=jsonObject.getDouble("current_price")*(double)Integer.parseInt(jsonObject.getString("current_quantity"));
+        }
+        Map<String,Object> map=new HashMap(1);
+        map.put("item",itemArray);
+        map.put("total_price",getMoney(totalPrice));
+        String item= JSON.toJSONString(map);
+        return item;
     }
 }

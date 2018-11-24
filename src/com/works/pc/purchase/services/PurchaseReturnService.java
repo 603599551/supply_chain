@@ -3,8 +3,9 @@ package com.works.pc.purchase.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
@@ -13,13 +14,12 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
 import com.utils.UUIDTool;
-import com.utils.UserSessionUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 
-import static com.common.service.OrderNumberGenerator.getWarehousePurchaseOrderNumber;
 import static com.common.service.OrderNumberGenerator.getWarehouseReturnOrderNumber;
+import static com.constants.DictionaryConstants.PURCHASE_RETURN_TYPE;
 
 /**
  * 该类实现以下功能：
@@ -83,8 +83,9 @@ public class PurchaseReturnService extends BaseService {
         }
         JSONArray jsonArray=JSONArray.parseArray(record.getStr("return_item"));
         int jsonLen=jsonArray.size();
+        JSONArray ilkArray=new JSONArray();
         //key---供应商id value---供应商id相同的退货项
-        Map<String,String> returnItemMap=new HashMap<>();
+        Map<String,JSONArray> returnItemMap=new HashMap<>();
         //遍历return_item，将供应商id相同的退货项整理到一起
         for(int i=0;i<jsonLen;i++){
             JSONObject jsob=jsonArray.getJSONObject(i);
@@ -94,38 +95,48 @@ public class PurchaseReturnService extends BaseService {
             }
             String supplierId=jsob.getString("supplier_id");
             if (returnItemMap.get(supplierId)==null){
-                returnItemMap.put(supplierId,jsob.toJSONString());
+                ilkArray=new JSONArray();
+                ilkArray.add(jsob);
+                returnItemMap.put(supplierId,ilkArray);
             }else {
-                returnItemMap.put(supplierId,returnItemMap.get(supplierId)+","+jsob.toJSONString());
+                ilkArray=returnItemMap.get(supplierId);
+                ilkArray.add(jsob);
+                returnItemMap.put(supplierId,ilkArray);
             }
         }
         int mapLen=returnItemMap.size();
         //处理新增的退货单List
         List<Record> returnItemList=new ArrayList<>(mapLen);
-        Iterator<Map.Entry<String, String>> entries = returnItemMap.entrySet().iterator();
+        Iterator<Map.Entry<String, JSONArray>> entries = returnItemMap.entrySet().iterator();
         while (entries.hasNext()) {
-            Map.Entry<String, String> entry = entries.next();
+            Map.Entry<String, JSONArray> entry = entries.next();
             Record record1=new Record();
             record1.set("id", UUIDTool.getUUID());
             record1.set("supplier_id",entry.getKey());
             record1.set("num",getWarehouseReturnOrderNumber());
             record1.set("from_purchase_order_id",fromPurchaseOrderId);
             record1.set("from_purchase_order_num",fromPurchaseOrderNum);
-            record1.set("return_item",entry.getValue());
+            Map<String,JSONArray> RIP=new HashMap<>(1);
+            RIP.put("item",entry.getValue());
+            record1.set("return_item", JSON.toJSONString(RIP));
             record1.set("order_state",purchaseReturnState[0]);
             record1.set("city",city);
             returnItemList.add(record1);
         }
-        //批量新增退货流程记录
-        if (!ppps.batchSaveReturnProcess(record,returnItemList)){
-            return null;
-        }
         try{
             //批量新增的退货单List
-            return Db.batchSave(TABLENAME,returnItemList,returnItemList.size())==null? null:returnItemList;
+            if (Db.batchSave(TABLENAME,returnItemList,returnItemList.size())==null){
+                return null;
+            }
         }catch (Exception e){
             throw new PcException(ADD_EXCEPTION,e.getMessage());
         }
+        //批量新增退货流程记录
+        List<Record> returnProcessList=ppps.batchSaveReturnProcess(record,returnItemList);
+        for (Record r:returnProcessList){
+            r.set("item",JSONObject.parseObject(r.getStr("item")).getJSONArray("item"));
+        }
+        return returnProcessList;
     }
 
     /**
@@ -147,6 +158,82 @@ public class PurchaseReturnService extends BaseService {
         if (!super.updateById(record)) {
             return false;
         }
-        return Db.update("UPDATE s_purchase_purchasereturn_process SET state='1' WHERE purchase_id=?",r.getStr("id"))==0? false:true;
+        return Db.update("UPDATE s_purchase_purchasereturn_process SET state='1' WHERE purchase_return_id=?",r.getStr("id"))==0? false:true;
     }
+
+    /**
+     * 通过采购退货单id显示退货项+总金额+流程日志
+     * 数据格式见接口文档
+     * @param purchaseId 采购退货单id
+     * @return
+     */
+    public Record showPurchaseReturnOrderById(String purchaseId) throws PcException{
+        PurchasePurchasereturnProcessService ppps=enhance(PurchasePurchasereturnProcessService.class);
+        Record orderR=Db.findFirst("SELECT * FROM s_purchase_return WHERE id=?",purchaseId);
+        JSONArray itemArray=JSONObject.parseObject(orderR.getStr("return_item")).getJSONArray("item");
+        Record record=new Record();
+        record.setColumns(orderR);
+        record.set("order_state_text",DictionaryConstants.DICT_STRING_MAP.get(PURCHASE_RETURN_TYPE).get(record.getStr("order_state")));
+        //前端要求判断第几个
+        int stateLen=purchaseReturnState.length;
+        int count=0;
+        for (int i=0;i<stateLen;i++){
+            if (StringUtils.equals(record.getStr("order_state"),purchaseReturnState[i])){
+                if (i==5){
+                    count=5;
+                }else if (i==4){
+                    count=-1;
+                }else {
+                    count=i+1;
+                }
+                break;
+            }
+        }
+        record.set("state_count",count);
+        //采购项
+        record.set("item",itemArray);
+        int len=itemArray.size();
+        double singlePrice=0;
+        double totalPrice=0;
+        //采购单总金额
+        for (int i=0;i<len;i++){
+            singlePrice=itemArray.getJSONObject(i).getDoubleValue("current_price")*itemArray.getJSONObject(i).getDoubleValue("current_quantity");
+            totalPrice+=singlePrice;
+        }
+        record.set("total_price",totalPrice);
+        //流程日志
+        List<Record> processList=ppps.getReturnProcessForOneOrder(purchaseId);
+        record.set("process",handleProcessInfo(processList));
+        return record;
+    }
+
+    /**
+     * 对流程记录数据的处理，整理成接口文档规定的格式
+     * @param processList 流程记录list
+     * @return 流程日志list
+     * @throws PcException
+     */
+    public List<Record> handleProcessInfo(List<Record> processList)throws PcException{
+        for (Record record:processList){
+//            record.set("type",record.getStr("purchase_order_state"));
+//            record.set("name",record.getStr("nickname"));
+//            record.set("time",record.getStr("handle_date"));
+            record.remove("item");
+            Record messageR=new Record();
+            if (StringUtils.isEmpty(record.getStr("handle_date"))){
+                record.set("is_handle",0);
+                record.set("message","未处理");
+            }else {
+                if (StringUtils.equals(record.getStr("state"),"1")){
+                    messageR.set("is_agree_text","同意");
+                }else {
+                    messageR.set("is_agree_text","不同意");
+                }
+                record.set("is_handle",1);
+                record.set("message",messageR);
+            }
+        }
+        return processList;
+    }
+
 }

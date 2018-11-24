@@ -44,8 +44,16 @@ public class StoreStockService extends BaseService {
 
     @Override
     public List<Record> listBeforeReturn(List<Record> list) {
+        Record record;
+        JSONObject jsonObject;
+        double quantity;
         for (Record r:list){
-            r.set("material_data",JSONObject.parseObject(r.getStr("material_data")));
+            jsonObject=JSONObject.parseObject(r.getStr("material_data"));
+            r.set("material_data",jsonObject);
+            record=BeanUtils.jsonToRecord(jsonObject);
+            record.set("quantity",r.getStr("quantity"));
+            quantity=getMoney(smallUnit2outUnitDecil(record));
+            r.set("quantity",quantity);
         }
         return list;
     }
@@ -53,12 +61,15 @@ public class StoreStockService extends BaseService {
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
         List<Record> list=page.getList();
+        Record record;
+        double quantity;
+        JSONObject jsonObject;
         for (Record r:list){
-            JSONObject jsonObject=JSONObject.parseObject(r.getStr("material_data"));
+            jsonObject=JSONObject.parseObject(r.getStr("material_data"));
             r.set("material_data",jsonObject);
-            Record record1=BeanUtils.jsonToRecord(jsonObject);
-            record1.set("quantity",r.getStr("quantity"));
-            double quantity=getMoney(smallUnit2outUnitDecil(record1));
+            record=BeanUtils.jsonToRecord(jsonObject);
+            record.set("quantity",r.getStr("quantity"));
+            quantity=getMoney(smallUnit2outUnitDecil(record));
             r.set("quantity",quantity);
         }
         return page;
@@ -72,15 +83,15 @@ public class StoreStockService extends BaseService {
      *              {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
-     *                  "before_quantity":"盘点项之前的数量",
-     *                  "current_quantity":"盘点项现在的数量",
+     *                  "before_quantity":"盘点项之前的数量"(出库单位)
+     *                  "current_quantity":"盘点项现在的数量"(出库单位)
      *                  "item_remark":"盘点项的备注"
      *              },
      *              {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
-     *                  "before_quantity":"盘点项之前的数量",
-     *                  "current_quantity":"盘点项现在的数量",
+     *                  "before_quantity":"盘点项之前的数量"(出库单位)
+     *                  "current_quantity":"盘点项现在的数量"(出库单位)
      *                  "item_remark":"盘点项的备注"
      *              }
      *          ]
@@ -102,7 +113,7 @@ public class StoreStockService extends BaseService {
             countItem.set("id",countItem.getStr("stock_id"));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",countItem.getStr("current_quantity"));
-            countItem.set("quantity", UnitConversion.outUnit2SmallUnit(materialR));
+            countItem.set("quantity", UnitConversion.outUnit2SmallUnitDecil(materialR));
             countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
             itemList.add(countItem);
         }
