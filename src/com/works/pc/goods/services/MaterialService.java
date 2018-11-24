@@ -20,6 +20,9 @@ import com.works.pc.warehourse.services.WarehouseStockService;
 
 import java.util.*;
 
+import static com.utils.NumberUtils.getMoney;
+import static com.utils.UnitConversion.smallUnit2outUnitDecil;
+
 @Before(Tx.class)
 public class MaterialService extends BaseService {
 
@@ -236,6 +239,10 @@ public class MaterialService extends BaseService {
         for (Record record:stockList){
             JSONObject jsonObject=JSONObject.parseObject(record.getStr("material_data"));
             record.set("material_data",jsonObject);
+            Record record1=BeanUtils.jsonToRecord(jsonObject);
+            record1.set("quantity",record.getStr("quantity"));
+            double quantity=getMoney(smallUnit2outUnitDecil(record1));
+            record.set("quantity",quantity);
         }
         List<Record> allList = new ArrayList<>(stockList);
         BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
