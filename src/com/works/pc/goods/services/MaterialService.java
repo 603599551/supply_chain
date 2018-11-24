@@ -245,7 +245,7 @@ public class MaterialService extends BaseService {
             record.set("quantity",quantity);
         }
         List<Record> allList = new ArrayList<>(stockList);
-        BeanUtils.createTree(root, allList, "catalog_pid", "catalog_cid");
+        BeanUtils.createTreeWithDisabled(root, allList, "catalog_pid", "catalog_cid");
         return root;
     }
 
