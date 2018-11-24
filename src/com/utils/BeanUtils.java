@@ -21,6 +21,37 @@ public class BeanUtils {
     }
 
     /**
+     * 创建树形结构，在显示仓库库存时用到，当某个原料没有库存时，加上disabled，禁选
+     * @param root 带有分类的原料树
+     * @param list 库存记录
+     * @param parentName
+     * @param name
+     */
+    public static void createTreeWithDisabled(Record root, List<Record> list, String parentName, String name){
+        if(list == null || list.size() == 0){
+            return;
+        }
+        for(Record r : list){
+            if(r.get(parentName).equals(root.get(name))){
+                List<Record> children = root.get("children");
+                if(children == null){
+                    children = new ArrayList<>();
+                    root.set("children", children);
+                }
+                children.add(r);
+            }
+        }
+        List<Record> children = root.get("children");
+        if(children != null && children.size() > 0){
+            for(Record r : children){
+                createTreeWithDisabled(r, list, parentName, name);
+            }
+        }else if (!list.contains(root)){
+            root.set("disabled",true);
+        }
+    }
+
+    /**
      * 创建树形结构
      * @param root 根节点对象
      * @param list 要生成tree的集合
