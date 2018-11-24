@@ -163,7 +163,7 @@ public class UnitConversion {
      * @param out_unit    提货单位
      * @return
      */
-    public static double smallUnit2outUnitDecil(int num, String min_unit, String mid_unit, int min2mid_num, String max_unit, int mid2max_num, String out_unit) {
+    public static double smallUnit2outUnitDecil(double num, String min_unit, String mid_unit, int min2mid_num, String max_unit, int mid2max_num, String out_unit) {
         if (StringUtils.isBlank(min_unit)) {
             throw new NullPointerException("unit不能为空！");
         }
@@ -185,6 +185,26 @@ public class UnitConversion {
         }
         reNum = new Double(String.format("%.5f", reNum));
         return reNum;
+    }
+
+    public static double smallUnit2outUnitDecil(Record r) {
+        return smallUnit2outUnitDecil(r,"quantity");
+    }
+
+    public static double smallUnit2outUnitDecil(Record r,String numName) {
+        String out_unit = r.getStr("out_unit");//出库单位
+        String max_unit = r.getStr("max_unit");//大单位
+        String min_unit = r.getStr("min_unit");//最小单位
+        Object boxAttrNumObj = r.getStr("mid2max_num");//中间单位换算成大单位的数值
+        String mid_unit = r.getStr("mid_unit");//中间单位
+        Object unitNumObj = r.getStr("min2mid_num");//小单位换算成大单位的数值
+        Object numObj = r.getStr(numName);//要换算的数量（提货单位）
+
+        int mid2max_num = NumberUtils.parseInt(boxAttrNumObj, 0);
+        int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
+        double num=NumberUtils.parseDouble(numObj, 0);
+
+        return smallUnit2outUnitDecil(num,min_unit,mid_unit, min2mid_num, max_unit,mid2max_num, out_unit);
     }
 
     /**
@@ -220,5 +240,30 @@ public class UnitConversion {
             throw new RuntimeException("没有与提货单位相匹配的转换单位！");
         }
         return reNum;
+    }
+
+    /**
+     * 将提货单位的数量，换算成最小单位的数量
+     * 从record中取出如下数据：num,min_unit,mid_unit,min2mid_num,max_unit,mid2max_num,out_unit
+     * @param r 默认字段名为quantity
+     * @return
+     */
+    public static double outUnit2SmallUnitDecil(Record r) {
+        return outUnit2SmallUnitDecil(r,"quantity");
+    }
+
+    public static double outUnit2SmallUnitDecil(Record r,String numName) {
+        String out_unit = r.getStr("out_unit");//出库单位
+        String max_unit = r.getStr("max_unit");//大单位
+        String boxAttrNumObj = r.getStr("mid2max_num");//中间单位换算成大单位的数值
+        String mid_unit = r.getStr("mid_unit");//大单位
+        String min_unit = r.getStr("min_unit");//最小单位
+        Object unitNumObj = r.getStr("min2mid_num");//小单位换算成大单位的数值
+        Object numObj = r.getStr(numName);//要换算的数量（提货单位）
+
+        int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
+        double num=NumberUtils.parseDouble(numObj, 0);
+
+        return outUnit2SmallUnitDecil(num,min_unit,mid_unit, min2mid_num, max_unit,boxAttrNumObj, out_unit);
     }
 }
