@@ -2,8 +2,8 @@ package com.works.pc.warehourse.services;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
@@ -60,8 +60,8 @@ public class WarehouseStockService extends BaseService {
      *                  "id":"原料id",
      *                  "stock_id":"仓库库存记录id",
      *                  "batch_num":"仓库原料批号",
-     *                  "before_quantity":"盘点项之前的数量",
-     *                  "current_quantity":"盘点项现在的数量",
+     *                  "before_quantity":"盘点项之前的数量"(出库单位)
+     *                  "current_quantity":"盘点项现在的数量"(出库单位)
      *                  "item_remark":"盘点项的备注"
      *              },
      *              {
@@ -89,13 +89,12 @@ public class WarehouseStockService extends BaseService {
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             Record materialR=materialMap.get(countItem.getStr("id"));
             //由于仓库入库时，material_data存了提供本批次原料的供应商id，编号，姓名，因此在更新库存信息时不更新material_data
-//            countItem.set("material_data",materialR.toString());
             countItem.set("id",countItem.getStr("stock_id"));
             countItem.set("user_id",record.getStr("count_id"));
             countItem.set("warehouse_id",record.getStr("warehouse_id"));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",countItem.getStr("current_quantity"));
-            countItem.set("quantity", UnitConversion.outUnit2SmallUnit(materialR));
+            countItem.set("quantity", UnitConversion.outUnit2SmallUnitDecil(materialR));
             countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
             itemList.add(countItem);
         }
@@ -103,7 +102,7 @@ public class WarehouseStockService extends BaseService {
     }
 
     /**
-     * 批量新增门店原料库存信息
+     * 批量新增仓库库存信息
      * @author CaryZ
      * @date 2018-11-13
      * @param addStockList 新增库存信息
@@ -124,15 +123,27 @@ public class WarehouseStockService extends BaseService {
     }
 
     /**
-     * 在物流发货后根据item每个元素中的stock_id更新仓库库存
+     * 采购退货流程：在物流发货后根据item每个元素中的stock_id减少仓库库存
      * @author CaryZ
      * @date 2018-11-17
-     * @param record 当前流程记录信息
+     * @param record 当前流程记录信息 current_quantity 退货数量（出库单位） quantity库存数量（最小单位）
      * @return 成功/失败 true/false
      */
     public boolean updateStockAfterDelivery(Record record){
-        MaterialService ms=enhance(MaterialService.class);
         String item=record.getStr("item");
+        return updateStockAfterReturn(item,"stock_id",false);
+    }
+
+    /**
+     * 1.采购退货，在物流发货后根据item每个元素中的stock_id减少仓库库存
+     * 2.物流完成退货单，根据order_item里的warehouse_stock_id、要退的数量current_quantity（出库单位）增加仓库库存的quantity
+     * @param item JSON数组
+     * @param isAdd 增加/减少 true/false
+     * @param colomnName 仓库库存id字段名
+     * @return
+     */
+    public boolean updateStockAfterReturn(String item,String colomnName,boolean isAdd){
+        MaterialService ms=enhance(MaterialService.class);
         JSONObject itemJson=JSONObject.parseObject(item);
         JSONArray itemArray=itemJson.getJSONArray("item");
         //根据itemArray查询原料的详细信息
@@ -145,12 +156,12 @@ public class WarehouseStockService extends BaseService {
         }
         int itemLen=itemArray.size();
         //item每个元素中的stock_id提出来
-        List<String> ids=new ArrayList<>(itemLen);
+        String[] ids=new String[itemLen];
         for (int i=0;i<itemLen;i++){
-            ids.add(itemArray.getJSONObject(i).getString("stock_id"));
+            ids[i]=itemArray.getJSONObject(i).getString(colomnName);
         }
         //通过id找到历史库存
-        List<Record> stockList=super.selectByColumnIn("id",(String[])ids.toArray());
+        List<Record> stockList=super.selectByColumnIn("id",ids);
         //退货项转成的List<Record>
         List<Record> itemList=new ArrayList<>(itemLen);
         String beforeQuantity="";
@@ -158,21 +169,58 @@ public class WarehouseStockService extends BaseService {
             Record itemR= BeanUtils.jsonToRecord(itemArray.getJSONObject(i));
             Record materialR=materialMap.get(itemR.getStr("id"));
             for (Record stockR:stockList){
-                if (StringUtils.equals(itemR.getStr("stock_id"),stockR.getStr("id"))){
+                if (StringUtils.equals(itemR.getStr(colomnName),stockR.getStr("id"))){
                     beforeQuantity=stockR.getStr("quantity");
                     break;
                 }
             }
-            itemR.set("id",itemR.getStr("stock_id"));
+            Record updateStockR=new Record();
+            updateStockR.set("id",itemR.getStr(colomnName));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",itemR.getStr("current_quantity"));
-            //历史库存-退货量
-            itemR.set("quantity", Integer.parseInt(beforeQuantity)-UnitConversion.outUnit2SmallUnit(materialR));
-            itemR.remove("stock_id","before_quantity","current_quantity");
-            itemList.add(itemR);
+            if (isAdd){
+                //历史库存+退货量(最小单位)
+                updateStockR.set("quantity", Double.parseDouble(beforeQuantity)+UnitConversion.outUnit2SmallUnitDecil(materialR));
+            }else {
+                //历史库存-退货量(最小单位)
+                updateStockR.set("quantity", Double.parseDouble(beforeQuantity)-UnitConversion.outUnit2SmallUnitDecil(materialR));
+            }
+            itemList.add(updateStockR);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,itemLen)==null? false:true;
+    }
 
+
+    /**
+     * 通过门店退货单的原料ids查询仓库库存表得到库存记录id和批号
+     * 遍历totalList，采用map方式进行归类
+     * key---原料id value ---list<Record> 批号-库存记录id
+     * @param materialIds
+     * @return
+     */
+    public Map<String,List<Record>> queryBatchNumList(String... materialIds){
+        List<Record> totalList= super.selectByColumnIn("material_id",materialIds);
+        Map<String,List<Record>> map=new HashMap<>();
+        List<Record> list=new ArrayList<>();
+        String materialId="";
+        for (Record record1:totalList){
+            Record record2=new Record();
+            record2.set("name",record1.getStr("batch_num"));
+            record2.set("value",record1.getStr("id"));
+            materialId=record1.getStr("material_id");
+            //首次新建batchNumList
+            if (map.get(materialId)==null){
+                List<Record> batchNumList=new ArrayList<>();
+                batchNumList.add(record2);
+                map.put(materialId,batchNumList);
+            }else {
+                //取目标list，往里加Record，再put回去
+                list=map.get(materialId);
+                list.add(record2);
+                map.put(materialId,list);
+            }
+        }
+        return map;
     }
 
     /**
