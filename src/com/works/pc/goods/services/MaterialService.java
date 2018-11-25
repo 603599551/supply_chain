@@ -205,6 +205,9 @@ public class MaterialService extends BaseService {
         if(materialList != null && materialList.size() > 0){
             for(Record r : materialList){
                 handleRecord(r);
+                //前端识别需要
+                r.set("batch_num","");
+                r.set("quantity",1);
             }
         }
         Record root = new Record();
@@ -238,6 +241,9 @@ public class MaterialService extends BaseService {
         List<Record> stockList=Db.find("SELECT *,id catalog_cid,material_id catalog_pid,batch_num name FROM "+tableName+" WHERE "+columnName+"=? AND `quantity`>'0'",columnValue);
         for (Record record:stockList){
             JSONObject jsonObject=JSONObject.parseObject(record.getStr("material_data"));
+            jsonObject.put("logistics","");
+            jsonObject.put("current_quantity",1);
+            jsonObject.put("stock_id","");
             record.set("material_data",jsonObject);
             Record record1=BeanUtils.jsonToRecord(jsonObject);
             record1.set("quantity",record.getStr("quantity"));
