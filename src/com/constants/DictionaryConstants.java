@@ -32,6 +32,10 @@ public class DictionaryConstants {
     public static final String STORE_RETURN_TYPE="store_return_type";
     //采购退货流程状态
     public static final String PURCHASE_RETURN_TYPE = "purchase_return_type";
+    //门店废弃单类型
+    public static final String STORE_SCRAP_TYPE = "store_scrap_type";
+    //门店废弃单状态
+    public static final String STORE_SCRAP_STATE = "store_scrap_state";
 
 
 
