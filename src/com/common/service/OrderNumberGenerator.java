@@ -29,6 +29,10 @@ public class OrderNumberGenerator {
      */
     private static final String TYPE_CKTH="CKTH";
     /**
+     * 仓库移库单类型
+     */
+    private static final String TYPE_CKYK="CKYK";
+    /**
      * 门店订货单类型
      */
     private static final String TYPE_MDDH="MDDH";
@@ -36,6 +40,10 @@ public class OrderNumberGenerator {
      * 门店退货单类型
      */
     private static final String TYPE_MDTH="MDTH";
+    /**
+     * 门店废弃单类型
+     */
+    private static final String TYPE_MDFQ="MDFQ";
 
 
     public static synchronized String getOrderNumber(String name,String remark,String type){
@@ -91,7 +99,13 @@ public class OrderNumberGenerator {
     public static synchronized String getWarehouseReturnOrderNumber(){
         return getOrderNumber("仓库退货单","仓库退货编号",TYPE_CKTH);
     }
-
+    /**
+     * 生成仓库移库单编号
+     * @return
+     */
+    public static synchronized String getWarehouseMoveOrderNumber(){
+        return getOrderNumber("仓库移库单","仓库移库编号",TYPE_CKYK);
+    }
     /**
      * 生成门店订货单编号
      * @return
@@ -106,6 +120,14 @@ public class OrderNumberGenerator {
      */
     public static synchronized String getStoreOrderReturnNumber(){
         return getOrderNumber("门店退货单","门店退货编号",TYPE_MDTH);
+    }
+
+    /**
+     * 生成门店废弃单编号
+     * @return
+     */
+    public static synchronized String getStoreScrapReturnNumber(){
+        return getOrderNumber("门店废弃单","门店废弃编号",TYPE_MDFQ);
     }
 
 //    /**
