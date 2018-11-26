@@ -14,12 +14,10 @@ import com.utils.BeanUtils;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
+import com.works.pc.order.services.OrderReturnService;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 该类操作仓库库存表，实现新增和修改功能
@@ -88,15 +86,19 @@ public class WarehouseStockService extends BaseService {
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             Record materialR=materialMap.get(countItem.getStr("id"));
-            //由于仓库入库时，material_data存了提供本批次原料的供应商id，编号，姓名，因此在更新库存信息时不更新material_data
-            countItem.set("id",countItem.getStr("stock_id"));
-            countItem.set("user_id",record.getStr("count_id"));
-            countItem.set("warehouse_id",record.getStr("warehouse_id"));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",countItem.getStr("current_quantity"));
-            countItem.set("quantity", UnitConversion.outUnit2SmallUnitDecil(materialR));
-            countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
-            itemList.add(countItem);
+            Record newStockR=new Record();
+            newStockR.set("id",countItem.getStr("stock_id"));
+            newStockR.set("user_id",record.getStr("count_id"));
+            newStockR.set("quantity",UnitConversion.outUnit2SmallUnitDecil(materialR));
+            //由于仓库入库时，material_data存了提供本批次原料的供应商id，编号，姓名，因此在更新库存信息时不更新material_data
+//            countItem.set("id",countItem.getStr("stock_id"));
+//            countItem.set("user_id",record.getStr("count_id"));
+//            countItem.set("warehouse_id",record.getStr("warehouse_id"));
+//            countItem.set("quantity", UnitConversion.outUnit2SmallUnitDecil(materialR));
+//            countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
+            itemList.add(newStockR);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
     }
@@ -190,37 +192,68 @@ public class WarehouseStockService extends BaseService {
         return Db.batchUpdate(TABLENAME,"id",itemList,itemLen)==null? false:true;
     }
 
+    /**
+     * 查询仓库库存原料id和名称，使用HashSet<Map>去除重复
+     * @param record
+     * @return
+     */
+    public HashSet<Record> queryMaterialNameIds(Record record){
+        List<Record> list=Db.find("SELECT material_id value,material_data name FROM s_warehouse_stock WHERE state='1' AND quantity>'0' AND warehouse_id=?",record.getStr("warehouse_id"));
+        for (Record r:list){
+            JSONObject jsonObject=JSONObject.parseObject(r.getStr("name"));
+            r.set("name",jsonObject.getString("name"));
+        }
+        HashSet<Record> set=new HashSet<>();
+        set.addAll(list);
+        return set;
+    }
 
     /**
      * 通过门店退货单的原料ids查询仓库库存表得到库存记录id和批号
      * 遍历totalList，采用map方式进行归类
      * key---原料id value ---list<Record> 批号-库存记录id
-     * @param materialIds
+     * @param record 门店退货单信息
      * @return
      */
-    public Map<String,List<Record>> queryBatchNumList(String... materialIds){
-        List<Record> totalList= super.selectByColumnIn("material_id",materialIds);
-        Map<String,List<Record>> map=new HashMap<>();
-        List<Record> list=new ArrayList<>();
-        String materialId="";
-        for (Record record1:totalList){
-            Record record2=new Record();
-            record2.set("name",record1.getStr("batch_num"));
-            record2.set("value",record1.getStr("id"));
-            materialId=record1.getStr("material_id");
-            //首次新建batchNumList
-            if (map.get(materialId)==null){
-                List<Record> batchNumList=new ArrayList<>();
-                batchNumList.add(record2);
-                map.put(materialId,batchNumList);
-            }else {
-                //取目标list，往里加Record，再put回去
-                list=map.get(materialId);
-                list.add(record2);
-                map.put(materialId,list);
+    public void queryBatchNumList(Record record) throws PcException{
+        if (record.get("is_accepted")){
+            OrderReturnService orderReturnService=enhance(OrderReturnService.class);
+            Record returnOrderR=orderReturnService.findById(record.getStr("id"));
+            record.set("order_item",JSONObject.parseObject(returnOrderR.getStr("order_item")));
+        }else {
+            JSONObject jsonObject=record.get("order_item");
+            JSONArray itemArray=jsonObject.getJSONArray("item");
+            int itemLen=itemArray.size();
+            String[] materialIds=new String[itemLen];
+            for (int i=0;i<itemLen;i++){
+                materialIds[i]=itemArray.getJSONObject(i).getString("id");
+            }
+            List<Record> totalList= super.selectByColumnIn("material_id",materialIds);
+            Map<String,List<Record>> map=new HashMap<>();
+            List<Record> list=new ArrayList<>();
+            String materialId="";
+            for (Record record1:totalList){
+                Record record2=new Record();
+                record2.set("name",record1.getStr("batch_num"));
+                record2.set("value",record1.getStr("id"));
+                materialId=record1.getStr("material_id");
+                //首次新建batchNumList
+                if (map.get(materialId)==null){
+                    List<Record> batchNumList=new ArrayList<>();
+                    batchNumList.add(record2);
+                    map.put(materialId,batchNumList);
+                }else {
+                    //取目标list，往里加Record，再put回去
+                    list=map.get(materialId);
+                    list.add(record2);
+                    map.put(materialId,list);
+                }
+            }
+            for (int i=0;i<itemLen;i++){
+                itemArray.getJSONObject(i).put("batch_nums",map.get(itemArray.getJSONObject(i).getString("id")));
+                itemArray.getJSONObject(i).put("warehouse_stock_id","");
             }
         }
-        return map;
     }
 
     /**

@@ -110,12 +110,12 @@ public class StoreStockService extends BaseService {
         for (int i=0;i<countLen;i++){
             Record countItem= BeanUtils.jsonToRecord(countItems.getJSONObject(i));
             Record materialR=materialMap.get(countItem.getStr("id"));
-            countItem.set("id",countItem.getStr("stock_id"));
             //此步是为了便于调用outUnit2SmallUnit函数
             materialR.set("quantity",countItem.getStr("current_quantity"));
-            countItem.set("quantity", UnitConversion.outUnit2SmallUnitDecil(materialR));
-            countItem.remove("stock_id","before_quantity","current_quantity","item_remark");
-            itemList.add(countItem);
+            Record newStockR=new Record();
+            newStockR.set("id",countItem.getStr("stock_id"));
+            newStockR.set("quantity",UnitConversion.outUnit2SmallUnitDecil(materialR));
+            itemList.add(newStockR);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
     }

@@ -2,6 +2,7 @@ package com.works.pc.order.controllers;
 
 import com.alibaba.fastjson.JSONObject;
 import com.common.controllers.BaseCtrl;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.BeanUtils;
@@ -9,6 +10,8 @@ import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.order.services.OrderReturnService;
 import org.apache.commons.lang.StringUtils;
+
+import static com.constants.DictionaryConstants.STORE_RETURN_TYPE;
 
 /**
  * @author CaryZ
@@ -34,7 +37,8 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
 
     @Override
     public void handleRecord(Record record) {
-
+        record.set("logistics_id",usu.getSysUserId());
+        record.set("order_state_text", DictionaryConstants.DICT_STRING_MAP.get(STORE_RETURN_TYPE).get(record.getStr("order_state")));
     }
 
     /**
@@ -52,7 +56,7 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
     }
 
     /**
-     * 完全匹配查询：退货单状态
+     * 完全匹配查询：退货单状态、门店id、创建开始时间到结束时间
      * 模糊查询：退货单号
      * @param record 查询条件
      */
@@ -63,6 +67,11 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
             String []keywords=new String[]{keyword};
             record.set("$all$and#"+FIELD_NUM+"$like$or",keywords);
             record.remove("keyword");
+        }
+        String fromDate=record.getStr("from_date");
+        String toDate=record.getStr("to_date");
+        if (StringUtils.isNotEmpty(fromDate)&&StringUtils.isNotEmpty(toDate)){
+            record.set("$fromto"," AND Date(create_date) BETWEEN '"+fromDate+"' AND '"+toDate+"' ");
         }
         record.set("$sort"," ORDER BY "+FIELD_CREATEDATE+" DESC");
     }
@@ -77,6 +86,7 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
         JSONObject json = getJson(getRequest());
         Record record = BeanUtils.jsonToRecord(json);
         try {
+            handleRecord(record);
             boolean flag = service.acceptReturnItems(record);
             if(flag){
                 jhm.putMessage("接收成功！");
@@ -100,6 +110,7 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
         JSONObject json = getJson(getRequest());
         Record record = BeanUtils.jsonToRecord(json);
         try {
+            handleRecord(record);
             boolean flag = service.finishOrder(record);
             if(flag){
                 jhm.putMessage("完成成功！");
@@ -123,6 +134,7 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
         JSONObject json = getJson(getRequest());
         Record record = BeanUtils.jsonToRecord(json);
         try {
+            handleRecord(record);
             boolean flag = service.revokeOrder(record);
             if(flag){
                 jhm.putMessage("撤销成功！");
@@ -146,6 +158,7 @@ public class OrderReturnCtrl extends BaseCtrl<OrderReturnService> {
         JSONObject json = getJson(getRequest());
         Record record = BeanUtils.jsonToRecord(json);
         try {
+            handleRecord(record);
             boolean flag = service.returnOrder(record);
             if(flag){
                 jhm.putMessage("退回成功！");

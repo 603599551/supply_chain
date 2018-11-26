@@ -14,9 +14,7 @@ import com.utils.DateUtil;
 import com.works.pc.store.services.StoreStockService;
 import com.works.pc.warehourse.services.WarehouseStockService;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author CaryZ
@@ -25,9 +23,9 @@ import java.util.Map;
  * 1.小程序提交退货单
  * 2.pc端店长查看退货单（图片传全路径）
  * 3.PC端店长可以撤销退货单，前提在物流没有接收退货单基础上
- * 4.物流接收退货单，可以仿照原系统。修改订单状态，修改门店库存。
- * 5.物流退回退货单，修改订单状态，修改门店库存。
- * 6.物流完成退货单，修改订单状态、修改物流仓库库存。
+ * 4.物流接收退货单，可以仿照原系统。修改订单状态，减少门店库存。
+ * 5.物流退回退货单，修改订单状态，增加门店库存。
+ * 6.物流完成退货单，修改订单状态、增加物流仓库库存。
  */
 @Before(Tx.class)
 public class OrderReturnService extends BaseService {
@@ -57,18 +55,14 @@ public class OrderReturnService extends BaseService {
      }
 
     /**
-     * 1.将order_item的格式处理一下
+     * 1.order_item(JSON格式) 里存了item---JSON数组
      * 2.加上当前日期
      * @param record 要修改成的数据
      * @return
      */
      @Override
      public boolean updateById(Record record) throws PcException{
-         String orderItems=record.getStr("order_item");
-         JSONArray jsonArray=JSONArray.parseArray(orderItems);
-         Map<String,JSONArray> map=new HashMap(1);
-         map.put("item",jsonArray);
-         record.set("order_item",JSON.toJSONString(map));
+         record.set("order_item",JSON.toJSONString(record.get("order_item")));
          record.set("logistics_date", DateUtil.GetDateTime());
          return super.updateById(record);
      }
@@ -82,11 +76,9 @@ public class OrderReturnService extends BaseService {
      */
     public boolean acceptReturnItems(Record record) throws PcException{
         StoreStockService storeStockService=enhance(StoreStockService.class);
-        String orderItems=record.getStr("order_item");
-        JSONArray jsonArray=JSONArray.parseArray(orderItems);
-        Map<String,JSONArray> map=new HashMap(1);
-        map.put("item",jsonArray);
-        record.set("order_item",JSON.toJSONString(map));
+        JSONObject jsonObject=record.get("order_item");
+        JSONArray jsonArray=jsonObject.getJSONArray("item");
+        record.set("order_item",JSON.toJSONString(jsonObject));
         record.set("order_state",orderReturnState[1]);
         record.set("logistics_date", DateUtil.GetDateTime());
         if (!super.updateById(record)){
@@ -109,7 +101,7 @@ public class OrderReturnService extends BaseService {
         if (!this.updateById(record)){
             return false;
         }
-        return warehouseStockService.updateStockAfterReturn(record.getStr("order_item"),"warehouse_stock_id",true);
+        return warehouseStockService.updateStockAfterReturn(record.get("order_item"),"warehouse_stock_id",true);
     }
 
     /**
@@ -121,7 +113,6 @@ public class OrderReturnService extends BaseService {
      * @throws PcException
      */
     public boolean revokeOrder(Record record) throws PcException{
-        record.set("arrive_date",DateUtil.GetDate());
         record.set("order_state",orderReturnState[3]);
         return this.updateById(record);
     }
@@ -136,12 +127,9 @@ public class OrderReturnService extends BaseService {
      */
     public boolean returnOrder(Record record) throws PcException{
         StoreStockService storeStockService=enhance(StoreStockService.class);
-        String orderItems=record.getStr("order_item");
-        JSONArray jsonArray=JSONArray.parseArray(orderItems);
-        Map<String,JSONArray> map=new HashMap(1);
-        map.put("item",jsonArray);
-        record.set("arrive_date",DateUtil.GetDate());
-        record.set("order_item",JSON.toJSONString(map));
+        JSONObject jsonObject=record.get("order_item");
+        JSONArray jsonArray=jsonObject.getJSONArray("item");
+        record.set("order_item",JSON.toJSONString(jsonObject));
         record.set("order_state",orderReturnState[4]);
         record.set("logistics_date", DateUtil.GetDateTime());
         if (!super.updateById(record)){

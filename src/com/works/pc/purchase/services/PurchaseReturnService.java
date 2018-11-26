@@ -34,9 +34,9 @@ public class PurchaseReturnService extends BaseService {
 
     private static final String TABLENAME="s_purchase_return";
     private static String[] purchaseReturnState={"logistics_clearance","purchase_audit","finance_confirm","logistics_delivery","return_shutdown","return_finish"};
-    private static String[] columnNameArr = {"id","supplier_id","num","from_purchase_order_id","from_purchase_order_num","return_item","color","order_state","close_date","close_reason","close_id","city","remark","image","return_reason"};
-    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
-    private static String[] columnCommentArr = {"","","","","","","","","","","","","","",""};
+    private static String[] columnNameArr = {"id","supplier_id","num","from_purchase_order_id","from_purchase_order_num","return_item","color","order_state","close_date","close_reason","close_id","city","remark","image","return_reason","create_date"};
+    private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","TEXT","TEXT","TEXT","VARCHAR"};
+    private static String[] columnCommentArr = {"","","","","","","","","","","","","","","",""};
 
     public PurchaseReturnService() {
         super(TABLENAME, new TableBean(TABLENAME, columnNameArr, columnTypeArr, columnCommentArr));
@@ -121,6 +121,7 @@ public class PurchaseReturnService extends BaseService {
             record1.set("return_item", JSON.toJSONString(RIP));
             record1.set("order_state",purchaseReturnState[0]);
             record1.set("city",city);
+            record1.set("create_date",DateUtil.GetDateTime());
             returnItemList.add(record1);
         }
         try{

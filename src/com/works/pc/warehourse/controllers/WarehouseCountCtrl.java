@@ -49,12 +49,25 @@ public class WarehouseCountCtrl extends BaseCtrl<WarehouseCountService> {
 
     /**
      * 盘点记录列表
-     * 支持按照仓库ID、盘点日期完全匹配查询
+     * 模糊查询：盘点编号
+     * 完全匹配查询：盘点开始时间到结束时间
      * 按照盘点日期倒序排
      * @param record 查询条件
      */
     @Override
     public void createRecordBeforeSelect(Record record) {
+        String keyword=record.getStr("keyword");
+        if (StringUtils.isNotEmpty(keyword)){
+            String []keywords=new String[]{keyword};
+            record.set("$all$and#num$like$or",keywords);
+            record.remove("keyword");
+        }
+        String fromDate=record.getStr("from_date");
+        String toDate=record.getStr("to_date");
+        if (StringUtils.isNotEmpty(fromDate)&&StringUtils.isNotEmpty(toDate)){
+            record.set("$fromto"," AND Date(count_date) BETWEEN '"+fromDate+"' AND '"+toDate+"' ");
+        }
+        record.set("warehouse_id",usu.getUserBean().get("warehouse_id"));
         record.set("$sort"," ORDER BY count_date DESC");
     }
 
