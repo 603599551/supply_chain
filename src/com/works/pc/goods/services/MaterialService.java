@@ -238,7 +238,7 @@ public class MaterialService extends BaseService {
      */
     public Record getStockTree(String tableName,String columnName,String columnValue){
         Record root=getMaterialTree();
-        List<Record> stockList=Db.find("SELECT *,id catalog_cid,material_id catalog_pid,batch_num name FROM "+tableName+" WHERE "+columnName+"=? AND `quantity`>'0.0'",columnValue);
+        List<Record> stockList=Db.find("SELECT *,id catalog_cid,material_id catalog_pid,batch_num name FROM "+tableName+" WHERE "+columnName+"=? AND `quantity`>0",columnValue);
         for (Record record:stockList){
             JSONObject jsonObject=JSONObject.parseObject(record.getStr("material_data"));
             jsonObject.put("logistics","");
