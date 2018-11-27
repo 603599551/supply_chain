@@ -237,17 +237,20 @@ public class WarehouseStockService extends BaseService {
                 record2.set("name",record1.getStr("batch_num"));
                 record2.set("value",record1.getStr("id"));
                 materialId=record1.getStr("material_id");
-                //首次新建batchNumList
-                if (map.get(materialId)==null){
-                    List<Record> batchNumList=new ArrayList<>();
-                    batchNumList.add(record2);
-                    map.put(materialId,batchNumList);
-                }else {
-                    //取目标list，往里加Record，再put回去
-                    list=map.get(materialId);
-                    list.add(record2);
-                    map.put(materialId,list);
-                }
+//                //首次新建batchNumList
+//                if (map.get(materialId)==null){
+//                    List<Record> batchNumList=new ArrayList<>();
+//                    batchNumList.add(record2);
+//                    map.put(materialId,batchNumList);
+//                }else {
+//                    //取目标list，往里加Record，再put回去
+//                    list=map.get(materialId);
+//                    list.add(record2);
+//                    map.put(materialId,list);
+//                }
+                //java8新特性，效果和上面的一样，待前端测试
+                List<Record> batchNumList= map.computeIfAbsent(materialId,k->new ArrayList<>());
+                batchNumList.add(record2);
             }
             for (int i=0;i<itemLen;i++){
                 itemArray.getJSONObject(i).put("batch_nums",map.get(itemArray.getJSONObject(i).getString("id")));
