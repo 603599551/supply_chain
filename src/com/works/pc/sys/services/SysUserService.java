@@ -49,6 +49,20 @@ public class SysUserService extends BaseService {
      }
 
     /**
+     * 所有用户的id(key)和Record(value)  包括id和nickname
+     * @return
+     */
+     public Map<String,Record> getUsers(){
+        List<Record> list=Db.find("SELECT id,nickname FROM s_sys_user");
+         Map<String,Record> map=new HashMap<>(list.size());
+         for (Record record:list){
+             map.put(record.getStr("id"),record);
+         }
+         return map;
+     }
+
+    /**
+     * 流程的下一处理人列表
      * 根据角色名称得到属于该角色的所有可用用户
      * @param name
      * @return
@@ -56,6 +70,7 @@ public class SysUserService extends BaseService {
      public List<Record> getToUsers(String name){
          return Db.find("SELECT id value,nickname name FROM s_sys_user WHERE role_id=(SELECT id FROM s_sys_roles WHERE name=?) AND state='1'",name);
      }
+
 
      public Record login(Record record) throws PcException {
          return this.findOne(record);
