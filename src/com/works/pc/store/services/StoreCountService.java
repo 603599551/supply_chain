@@ -1,28 +1,23 @@
 package com.works.pc.store.services;
 
-import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.exception.PcException;
-import com.jfinal.json.Json;
-import com.utils.BeanUtils;
-import com.works.pc.goods.services.MaterialService;
-//import net.sf.json.JSONArray;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
+import com.exception.PcException;
 import com.jfinal.aop.Before;
-import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.utils.UUIDTool;
+import com.works.pc.goods.services.MaterialService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.utils.BeanUtils.recordListToMapList;
+
+//import net.sf.json.JSONArray;
 
 /**
  * 该类实现新增门店盘点信息功能
@@ -67,6 +62,8 @@ public class StoreCountService extends BaseService {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
      *                  "before_quantity":"盘点项之前的数量",
+     *                  "available_quantity":"盘点项可用库存数量",
+     *                  "change_record":"可用库存变化记录",
      *                  "current_quantity":"盘点项现在的数量",
      *                  "item_remark":"盘点项的备注"
      *              },
@@ -74,6 +71,8 @@ public class StoreCountService extends BaseService {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
      *                  "before_quantity":"盘点项之前的数量",
+     *                  "change_record":"可用库存变化记录",
+     *                  "available_quantity":"盘点项可用库存数量",
      *                  "current_quantity":"盘点项现在的数量",
      *                  "item_remark":"盘点项的备注"
      *              }
@@ -98,7 +97,8 @@ public class StoreCountService extends BaseService {
             materialMap1.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
             materialMap2.put(materialList.get(j).getStr("id"),materialList.get(j));
         }
-        if (!storeStockService.batchHandle(countItems,materialMap2)){
+        record.set("id", UUIDTool.getUUID());
+        if (!storeStockService.batchHandle(record,countItems,materialMap2)){
             return null;
         }
         JSONObject job;
@@ -118,4 +118,5 @@ public class StoreCountService extends BaseService {
         record.remove("state");
         return super.add(record);
     }
+
 }

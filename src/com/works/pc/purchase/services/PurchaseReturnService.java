@@ -12,8 +12,11 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.utils.BeanUtils;
 import com.utils.DateUtil;
 import com.utils.UUIDTool;
+import com.utils.UnitConversion;
+import com.works.pc.warehouse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -58,7 +61,7 @@ public class PurchaseReturnService extends BaseService {
 
     /**
      * 批量新增采购退货单，退货流程记录，逻辑如下：
-     * 先接收退货项return_item，根据供应商id拆分成几个部分，生成多个退货单，状态：物流清点，在流程表里建多条记录
+     * 先接收退货项return_item，根据供应商id拆分成几个部分，生成多个退货单，状态：物流清点，在流程表里建多条记录，批量更新可用库存
      * @author CaryZ
      * @date 2018-11-17
      * @param record 新增数据包括 from_purchase_order_id,from_purchase_order_num,return_item,current_quantity,city、handle_id(从controller传过来)
@@ -72,37 +75,57 @@ public class PurchaseReturnService extends BaseService {
         String fromPurchaseOrderNum=record.getStr("from_purchase_order_num");
         //订单发起城市
         String city=record.getStr("city");
-        Map<String,String> stockMap=new HashMap<>();
+        Map<String,Record> stockMap=new HashMap<>();
         //引单新建时
         if (StringUtils.isNotEmpty(fromPurchaseOrderId)){
-            List<Record> stockList=Db.find("SELECT id,material_id FROM s_warehouse_stock WHERE purchase_order_id=?",fromPurchaseOrderId);
+            List<Record> stockList=Db.find("SELECT * FROM s_warehouse_stock WHERE purchase_order_id=?",fromPurchaseOrderId);
             for (Record stockR:stockList){
-                //key---material_id,value---库存记录id
-                stockMap.put(stockR.getStr("material_id"),stockR.getStr("id"));
+                //key---material_id,value---库存记录
+                stockMap.put(stockR.getStr("material_id"),stockR);
             }
         }
         JSONArray jsonArray=JSONArray.parseArray(record.getStr("return_item"));
         int jsonLen=jsonArray.size();
-        JSONArray ilkArray=new JSONArray();
         //key---供应商id value---供应商id相同的退货项
         Map<String,JSONArray> returnItemMap=new HashMap<>();
+        //可用库存list
+        List<Record> updateStockList=new ArrayList<>(jsonLen);
+        double aq=0.0;
+        String changeRecord="";
+        Record baseR;
         //遍历return_item，将供应商id相同的退货项整理到一起
         for(int i=0;i<jsonLen;i++){
             JSONObject jsob=jsonArray.getJSONObject(i);
-            //引单新建时，将库存记录id存进item数组中的每个元素
-            if (stockMap.get(jsob.getString("id"))!=null){
-                jsob.put("stock_id",stockMap.get(jsob.getString("id")));
-            }
-            String supplierId=jsob.getString("supplier_id");
-            if (returnItemMap.get(supplierId)==null){
-                ilkArray=new JSONArray();
-                ilkArray.add(jsob);
-                returnItemMap.put(supplierId,ilkArray);
+            Record stockMapR=stockMap.get(jsob.getString("id"));
+            //引单新建时，将库存记录id存进item数组中的每个元素，并从stockMap中拿change_record和available_quantity（最小单位）
+            if (stockMapR!=null){
+                jsob.put("stock_id",stockMapR.getStr("id"));
+                aq= stockMapR.getDouble("available_quantity");
+                baseR=stockMapR;
             }else {
-                ilkArray=returnItemMap.get(supplierId);
-                ilkArray.add(jsob);
-                returnItemMap.put(supplierId,ilkArray);
+                aq=jsob.getDouble("available_quantity");
+                baseR=BeanUtils.jsonToRecord(jsob);
             }
+            Record aStockR=new Record();
+            aStockR.set("id",jsob.getString("stock_id"));
+            //可用库存=可用库存-退货量
+            aStockR.set("available_quantity",aq-UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob),"current_quantity"));
+            Record changeR=new Record();
+            changeR.set("handle_type","purchase_return");
+            changeR.set("handle_tablename",TABLENAME);
+            changeR.set("handle_id",record.getStr("handle_id"));
+            changeR.set("after_quantity",aStockR.getDouble("available_quantity"));
+            //这里handle_record_id还没生成，后期重构时要修正
+            aStockR.set("change_record",super.updateChangeRecord(changeR,baseR,record));
+            updateStockList.add(aStockR);
+            String supplierId=jsob.getString("supplier_id");
+            JSONArray ilkArray=returnItemMap.computeIfAbsent(supplierId,k->new JSONArray());
+            ilkArray.add(jsob);
+        }
+        //批量更新可用库存
+        WarehouseStockService warehouseStockService=enhance(WarehouseStockService.class);
+        if (!warehouseStockService.batchUpdate(updateStockList)){
+            return null;
         }
         int mapLen=returnItemMap.size();
         //处理新增的退货单List
@@ -144,19 +167,51 @@ public class PurchaseReturnService extends BaseService {
      * 关闭退货单
      * 将退货单表的记录的状态改为“关闭”
      * 将流程表该单的所有记录改成“完成”
+     * 增加涉及的退货项的可用库存aq,change_record
      * @author CaryZ
      * @date 2018-11-18
      * @param r 要关闭的采购单ID、关闭原因、关闭人ID
      * @return 运行成功/失败 true/false
      */
     public boolean shutdown(Record r) throws PcException {
-        Record record = new Record();
-        record.set("id", r.getStr("id"));
+        Record record = this.findById(r.getStr("id"));
         record.set("state", purchaseReturnState[4]);
         record.set("close_date", DateUtil.GetDateTime());
         record.set("close_reason", r.getStr("close_reason"));
         record.set("close_id", r.getStr("close_id"));
         if (!super.updateById(record)) {
+            return false;
+        }
+        String returnItem=record.getStr("return_item");
+        JSONObject jsonObject=JSONObject.parseObject(returnItem);
+        JSONArray itemArray=jsonObject.getJSONArray("item");
+        int itemLen=itemArray.size();
+        String[]ids=new String[itemLen];
+        //key---库存记录id，value---退货项信息
+        Map<String,JSONObject>itemMap=new HashMap<>(itemLen);
+        for(int i=0;i<itemLen;i++){
+            ids[i]=itemArray.getJSONObject(i).getString("stock_id");
+            itemMap.put(ids[i],itemArray.getJSONObject(i));
+        }
+        List<Record> updateStockList=super.selectByColumnIn("id",ids);
+        for(Record stockR:updateStockList){
+            //退货量（出库单位）
+            double returnNum=itemMap.get(stockR.getStr("id")).getDouble("current_quantity");
+            JSONObject jsob=JSONObject.parseObject(stockR.getStr("material_data"));
+            jsob.put("return_quantity",returnNum);
+            //退货量（最小单位）
+            returnNum=UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob),"return_quantity");
+            Record changeR=new Record();
+            changeR.set("handle_type","purchase_return");
+            changeR.set("handle_tablename",TABLENAME);
+            changeR.set("handle_id",record.getStr("close_id"));
+            changeR.set("after_quantity",stockR.getDouble("available_quantity"));
+            stockR.set("change_record",super.updateChangeRecord(changeR,stockR,record));
+            stockR.set("available_quantity",stockR.getDouble("available_quantity")+returnNum);
+        }
+        //批量更新可用库存
+        WarehouseStockService warehouseStockService=enhance(WarehouseStockService.class);
+        if (!warehouseStockService.batchUpdate(updateStockList)){
             return false;
         }
         return Db.update("UPDATE s_purchase_purchasereturn_process SET state='1' WHERE purchase_return_id=?",r.getStr("id"))==0? false:true;
@@ -216,9 +271,6 @@ public class PurchaseReturnService extends BaseService {
      */
     public List<Record> handleProcessInfo(List<Record> processList)throws PcException{
         for (Record record:processList){
-//            record.set("type",record.getStr("purchase_order_state"));
-//            record.set("name",record.getStr("nickname"));
-//            record.set("time",record.getStr("handle_date"));
             record.remove("item");
             Record messageR=new Record();
             if (StringUtils.isEmpty(record.getStr("handle_date"))){

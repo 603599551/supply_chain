@@ -15,6 +15,7 @@ import com.utils.NumberUtils;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.goods.services.MaterialService;
+import com.works.pc.order.services.OrderReturnService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class StoreStockService extends BaseService {
         Record record;
         JSONObject jsonObject;
         double quantity;
+        double available_quantity;
         for (Record r:list){
             jsonObject=JSONObject.parseObject(r.getStr("material_data"));
             r.set("material_data",jsonObject);
@@ -54,6 +56,10 @@ public class StoreStockService extends BaseService {
             record.set("quantity",r.getStr("quantity"));
             quantity=getMoney(smallUnit2outUnitDecil(record));
             r.set("quantity",quantity);
+            //可用库存回显，将最小单位换算成出库单位，待前端测试！
+            record.set("available_quantity",r.getStr("available_quantity"));
+            available_quantity=getMoney(smallUnit2outUnitDecil(record,"available_quantity"));
+            r.set("available_quantity",available_quantity);
         }
         return list;
     }
@@ -84,6 +90,7 @@ public class StoreStockService extends BaseService {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
      *                  "before_quantity":"盘点项之前的数量"(出库单位)
+     *                  "available_quantity":"盘点项可用库存数量",(新增的，待前端改完测试)
      *                  "current_quantity":"盘点项现在的数量"(出库单位)
      *                  "item_remark":"盘点项的备注"
      *              },
@@ -91,6 +98,7 @@ public class StoreStockService extends BaseService {
      *                  "id":"原料id",
      *                  "stock_id":"门店库存记录id",
      *                  "before_quantity":"盘点项之前的数量"(出库单位)
+     *                  "available_quantity":"盘点项可用库存数量",(新增的，待前端改完测试)
      *                  "current_quantity":"盘点项现在的数量"(出库单位)
      *                  "item_remark":"盘点项的备注"
      *              }
@@ -103,7 +111,7 @@ public class StoreStockService extends BaseService {
      * @return 更新库存信息成功/失败 true/false
      * @throws PcException
      */
-    public boolean batchHandle(JSONArray countItems,Map<String,Record> materialMap) throws PcException{
+    public boolean batchHandle(Record record,JSONArray countItems,Map<String,Record> materialMap) throws PcException{
         int countLen=countItems.size();
         //要更新的库存信息
         List<Record> itemList=new ArrayList<>(countLen);
@@ -115,37 +123,78 @@ public class StoreStockService extends BaseService {
             Record newStockR=new Record();
             newStockR.set("id",countItem.getStr("stock_id"));
             newStockR.set("quantity",UnitConversion.outUnit2SmallUnitDecil(materialR));
+            newStockR.set("available_quantity",calAQ(countItem,materialR));
+
+            //可用库存变化记录
+            Record changeR=new Record();
+            StoreCountService storeCountService=enhance(StoreCountService.class);
+            changeR.set("handle_type","store_count");
+            changeR.set("handle_tablename",storeCountService.getTableName());
+            changeR.set("handle_id",record.getStr("count_id"));
+            changeR.set("after_quantity",newStockR.getDouble("available_quantity"));
+            newStockR.set("change_record",super.updateChangeRecord(changeR,countItem,record));
+
             itemList.add(newStockR);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,countLen)==null? false:true;
     }
 
     /**
-     * 物流接收退货，根据order_item里的store_stock_id、要退的数量current_quantity（出库单位）、门店库存现有的数量quantity（出库单位）减少门店库存的quantity
+     * 计算可用库存=原值+现在实际库存-历史实际库存，适用于门店盘点
+     * @date 2018-11-26
+     * @param countItem
+     * @return
+     */
+    public double calAQ(Record countItem,Record materialR){
+        double aq=countItem.getDouble("available_quantity")+countItem.getDouble("current_quantity")-countItem.getDouble("before_quantity");
+        materialR.set("available_quantity",aq);
+        return UnitConversion.outUnit2SmallUnitDecil(materialR,"available_quantity");
+    }
+
+    /**
+     * 物流接收退货，根据order_item里的store_stock_id、要退的数量current_quantity（出库单位）、门店库存现有的数量quantity（出库单位）减少门店库存、available_quantity+change_record
      * 物流退回，增加门店库存
      * @author CaryZ
      * @date 2018-11-24
      * @return
      */
-    public boolean batchUpdate(JSONArray jsonArray,boolean isAdd){
+    public boolean batchUpdate(Record record,JSONArray jsonArray,boolean isAdd){
         int len=jsonArray.size();
         //要更新的库存信息
         List<Record> itemList=new ArrayList<>(len);
         for (int i=0;i<len;i++){
             Record jsonR= BeanUtils.jsonToRecord(jsonArray.getJSONObject(i));
-            Record record=new Record();
-            record.set("id",jsonR.getStr("store_stock_id"));
+            Record newStockR=new Record();
+            newStockR.set("id",jsonR.getStr("store_stock_id"));
             double finalQuantity=0.0;
+            //可用库存数量（出库单位）=可用库存+-退货量
+            double aq=0.0;
             if (isAdd){
                 finalQuantity=jsonR.getDouble("quantity")+jsonR.getDouble("current_quantity");
+                aq=jsonR.getDouble("available_quantity")+jsonR.getDouble("current_quantity");
             }else {
                 finalQuantity=jsonR.getDouble("quantity")-jsonR.getDouble("current_quantity");
+                aq=jsonR.getDouble("available_quantity")-jsonR.getDouble("current_quantity");
             }
             jsonR.set("final_quantity",finalQuantity);
+            jsonR.set("available_quantity",aq);
             double quantity=UnitConversion.outUnit2SmallUnitDecil(jsonR,"final_quantity");
             //保留2位小数
-            record.set("quantity", NumberUtils.getMoney(quantity));
-            itemList.add(record);
+            newStockR.set("quantity", NumberUtils.getMoney(quantity));
+
+            //可用库存数量（最小单位）
+            aq=UnitConversion.outUnit2SmallUnitDecil(jsonR,"available_quantity");
+            newStockR.set("available_quantity",aq);
+            //可用库存变化记录
+            Record changeR=new Record();
+            OrderReturnService orderReturnService=enhance(OrderReturnService.class);
+            changeR.set("handle_type","store_return");
+            changeR.set("handle_tablename",orderReturnService.getTableName());
+            changeR.set("handle_id",record.getStr("logistics_id"));
+            changeR.set("after_quantity",aq);
+            newStockR.set("change_record",super.updateChangeRecord(changeR,jsonR,record));
+
+            itemList.add(newStockR);
         }
         return Db.batchUpdate(TABLENAME,"id",itemList,len)==null? false:true;
     }

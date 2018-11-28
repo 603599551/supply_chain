@@ -1,0 +1,9 @@
+INSERT INTO `s_dictionary` VALUES ('11000', '流程类型', '0', 'process_type', NULL, 11000);
+INSERT INTO `s_dictionary` VALUES ('11010', '门店入库', '11000', 'store_in', NULL, 11010);
+INSERT INTO `s_dictionary` VALUES ('11020', '门店盘点', '11000', 'store_count', NULL, 11020);
+INSERT INTO `s_dictionary` VALUES ('11030', '门店退货', '11000', 'store_return', NULL, 11030);
+INSERT INTO `s_dictionary` VALUES ('11040', '门店废弃', '11000', 'store_scrap', NULL, 11040);
+INSERT INTO `s_dictionary` VALUES ('11050', '仓库盘点', '11000', 'warehouse_count', NULL, 11050);
+INSERT INTO `s_dictionary` VALUES ('11060', '采购入库', '11000', 'purchase_inwarehouse', NULL, 11060);
+INSERT INTO `s_dictionary` VALUES ('11070', '采购退货', '11000', 'purchase_return', NULL, 11070);
+INSERT INTO `s_dictionary` VALUES ('11080', '仓库移库', '11000', 'warehouse_move', NULL, 11080);

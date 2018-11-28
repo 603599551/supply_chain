@@ -71,7 +71,7 @@ public class OrderReturnService extends BaseService {
      * 物流接收退货单
      * 退货单状态：未接收->已接收
      * 接收后每个原料信息多了warehouse_stock_id，修改订单状态，减少门店库存。
-     * @param record 退货单信息（order_item从门店库存记录里获取，每个元素组成：material_data+仓库库存记录warehouse_stock_id+门店库存记录store_stock_id+现有数量quantity（出库单位）+要退的数量current_quantity（出库单位））
+     * @param record 退货单信息（order_item从门店库存记录里获取，每个元素组成：material_data+仓库库存记录warehouse_stock_id+门店库存记录store_stock_id+现有数量quantity（出库单位）+要退的数量current_quantity（出库单位）+available_quantity+change_record）
      * @return
      */
     public boolean acceptReturnItems(Record record) throws PcException{
@@ -84,7 +84,7 @@ public class OrderReturnService extends BaseService {
         if (!super.updateById(record)){
             return false;
         }
-        return storeStockService.batchUpdate(jsonArray,false);
+        return storeStockService.batchUpdate(record,jsonArray,false);
     }
 
     /**
@@ -101,7 +101,7 @@ public class OrderReturnService extends BaseService {
         if (!this.updateById(record)){
             return false;
         }
-        return warehouseStockService.updateStockAfterReturn(record.get("order_item"),"warehouse_stock_id",true);
+        return warehouseStockService.updateStockAfterReturn(record,record.get("order_item"),"warehouse_stock_id",true);
     }
 
     /**
@@ -135,7 +135,7 @@ public class OrderReturnService extends BaseService {
         if (!super.updateById(record)){
             return false;
         }
-        return storeStockService.batchUpdate(jsonArray,true);
+        return storeStockService.batchUpdate(record,jsonArray,true);
     }
 
 }

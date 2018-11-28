@@ -3,11 +3,12 @@ package com.works.pc.warehouse.services;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.common.service.BaseService;
 import com.bean.TableBean;
+import com.common.service.BaseService;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.utils.UUIDTool;
 import com.works.pc.goods.services.MaterialService;
 
 import java.util.HashMap;
@@ -53,6 +54,8 @@ public class WarehouseCountService extends BaseService {
      *                  "stock_id":"仓库库存记录id",
      *                  "batch_num":"仓库原料批号",
      *                  "before_quantity":"盘点项之前的数量",
+     *                  "available_quantity":"盘点项可用库存数量",
+     *                  "change_record":"可用库存变化记录",
      *                  "current_quantity":"盘点项现在的数量",
      *                  "item_remark":"盘点项的备注"
      *              },
@@ -61,6 +64,8 @@ public class WarehouseCountService extends BaseService {
      *                  "stock_id":"仓库库存记录id",
      *                  "batch_num":"仓库原料批号",
      *                  "before_quantity":"盘点项之前的数量",
+     *                  "available_quantity":"盘点项可用库存数量",
+     *                  "change_record":"可用库存变化记录",
      *                  "current_quantity":"盘点项现在的数量",
      *                  "item_remark":"盘点项的备注"
      *              }
@@ -85,6 +90,7 @@ public class WarehouseCountService extends BaseService {
             materialMap1.put(materialList.get(j).getStr("id"),countItems.getJSONObject(j));
             materialMap2.put(materialList.get(j).getStr("id"),materialList.get(j));
         }
+        record.set("id", UUIDTool.getUUID());
         if (!warehouseStockService.batchHandle(record,countItems,materialMap2)){
             return null;
         }

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
+import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
@@ -16,6 +17,7 @@ import com.utils.DateUtil;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.supplier.services.SupplierService;
+import com.works.pc.sys.services.SysUserService;
 import com.works.pc.warehouse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.constants.DictionaryConstants.PROCESS_TYPE;
 import static com.utils.BeanUtils.recordListToMapList;
 import static com.utils.NumberUtils.getMoney;
 
@@ -130,6 +133,8 @@ public class PurchasePurchasereturnProcessService extends BaseService {
                 stockR.set("state", "1");
                 //将JSONObject对象转为Record，再将提货单位数量->最小单位数量
                 stockR.set("quantity", UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob)));
+                stockR.set("available_quantity", stockR.get("quantity"));
+                stockR.set("change_record",JSON.toJSONString(addChangeRecord(record,stockR)));
                 stockR.set("batch_num", jsob.get("batch_num"));
                 stockR.set("material_data", jsob.toJSONString());
                 stockR.set("material_id", jsob.get("id"));
@@ -195,6 +200,33 @@ public class PurchasePurchasereturnProcessService extends BaseService {
             resultMap.put("flag",true);
         }
         return resultMap;
+    }
+
+    /**
+     *采购入库时，用于处理change_record字段的数据
+     * @param record 当前阶段的流程记录
+     * @param stockR 新增库存记录
+     * @return
+     */
+    public Map<String,List<Map>> addChangeRecord(Record record,Record stockR){
+        PurchaseOrderService purchaseOrderService=enhance(PurchaseOrderService.class);
+        List<Map> processList=new ArrayList<>();
+        Map<String,Object> process=new HashMap<>();
+        process.put("handle_type","purchase_inwarehouse");
+        process.put("handle_type_text", DictionaryConstants.DICT_STRING_MAP.get(PROCESS_TYPE).get(process.get("handle_type")));
+        process.put("handle_time",DateUtil.GetDateTime());
+        process.put("handle_tablename",purchaseOrderService.getTableName());
+        process.put("handle_record_id",record.getStr("purchase_id"));
+        process.put("handle_id",record.getStr("handle_id"));
+        SysUserService sysUserService=enhance(SysUserService.class);
+        Map<String,Record> userMap=sysUserService.getUsers();
+        process.put("handle_name",userMap.get(process.get("handle_id")).getStr("nickname"));
+        process.put("before_quantity",0);
+        process.put("after_quantity",stockR.get("quantity"));
+        processList.add(process);
+        Map<String,List<Map>> toJsonMap=new HashMap<>(1);
+        toJsonMap.put("process",processList);
+        return toJsonMap;
     }
 
     /**

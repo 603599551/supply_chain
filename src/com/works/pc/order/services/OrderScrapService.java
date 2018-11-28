@@ -69,7 +69,7 @@ public class OrderScrapService extends BaseService {
      * 物流接收废弃单
      * 废弃单状态：未接收->已接收
      * 修改订单状态，减少门店库存。
-     * @param record 废弃单信息（order_item从门店库存记录里获取，每个元素组成：material_data+门店库存记录store_stock_id+现有数量quantity（出库单位）+要退的数量current_quantity（出库单位））
+     * @param record 废弃单信息（order_item从门店库存记录里获取，每个元素组成：material_data+门店库存记录store_stock_id+现有数量quantity（出库单位）+要退的数量current_quantity（出库单位）+available_quantity+change_record）
      * @return
      */
     public boolean acceptReturnItems(Record record) throws PcException{
@@ -82,7 +82,7 @@ public class OrderScrapService extends BaseService {
         if (!super.updateById(record)){
             return false;
         }
-        return storeStockService.batchUpdate(jsonArray,false);
+        return storeStockService.batchUpdate(record,jsonArray,false);
     }
 
     /**
