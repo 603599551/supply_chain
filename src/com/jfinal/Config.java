@@ -2,6 +2,7 @@ package com.jfinal;
 
 import com.common.controllers.HomeCtrl;
 import com.common.controllers.LoginCtrl;
+import com.works.app.sorting.controllers.SortingLoginCtrl;
 import com.works.app.sorting.controllers.SortingOrderCtrl;
 import com.works.common.controllers.CommonColorCtrl;
 import com.works.common.controllers.DictionaryCtrl;
@@ -96,6 +97,7 @@ public class Config extends JFinalConfig {
 
 
         routes.add("/wx/sorting/sortingOrderCtrl", SortingOrderCtrl.class);
+        routes.add("/mobile/wx/sorting/sortingLoginCtrl", SortingLoginCtrl.class);
 
 
     }

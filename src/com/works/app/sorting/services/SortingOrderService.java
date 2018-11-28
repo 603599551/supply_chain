@@ -4,14 +4,18 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.common.service.WxSmallProgramService;
+import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.UnitConversion;
 import com.utils.UserSessionUtil;
+import com.works.pc.order.services.OrderService;
 import com.works.pc.warehouse.services.WarehouseOutOrderService;
 
 import java.util.*;
 
+@Before(Tx.class)
 public class SortingOrderService extends WxSmallProgramService{
 
     public List<Map<String, Object>> downOrder(UserSessionUtil usu){
@@ -83,8 +87,18 @@ public class SortingOrderService extends WxSmallProgramService{
                 params.add(s);
             }
             wenhao = wenhao.substring(0, wenhao.length() - 1);
-            String update = "update warehouse_out_order set status=? where id in({{wenhao}})".replace("{{wenhao}}", wenhao);
-
+            String select = "select * from s_warehouse_out_order where id in({{wenhao}})".replace("{{wenhao}}", wenhao);
+            Set<String> orderParamsSet = new HashSet<>();
+            orderParamsSet.add(OrderService.SORTING_FINISH);
+            List<Record> outOrderList = Db.find(select, ids);
+            if(outOrderList != null && outOrderList.size() > 0){
+                for(Record r : outOrderList){
+                    orderParamsSet.add(r.getStr("order_id"));
+                }
+            }
+            String updateOrder = "update s_order set status=? where id in{{wenhao}}";
+            Db.update(updateOrder, orderParamsSet.toArray(new String[orderParamsSet.size()]));
+            String update = "update s_warehouse_out_order set status=? where id in({{wenhao}})".replace("{{wenhao}}", wenhao);
             Db.update(update, params.toArray(new String[params.size()]));
         }
     }

@@ -44,7 +44,7 @@ public class AccessFilter implements Filter {
 
     }
 
-    private static final String[] STATIC_NO_FILTER_URL = {"/index.jsp", "/static/"};
+    private static final String[] STATIC_NO_FILTER_URL = {"/index.jsp", "/static/", "/mobile/", "/loginCtrl"};
 
     private boolean noFilterUrl(HttpServletRequest request) {
         String servletPath = request.getServletPath();

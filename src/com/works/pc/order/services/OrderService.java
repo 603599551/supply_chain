@@ -24,14 +24,14 @@ public class OrderService extends BaseService {
     private static String[] columnTypeArr = {"VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR", "VARCHAR"};
     private static String[] columnCommentArr = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
 
-    private static final String TO_BE_CONFIRMED = "to_be_confirmed";
-    private static final String TO_BE_RECEIVED = "to_be_received";
-    private static final String STORE_REVOCATION = "store_revocation";
-    private static final String LOGISTICS_OVERRULE = "logistics_overrule";
-    private static final String TO_BE_OUT_STORAGE = "to_be_out_storage";
-    private static final String TO_BE_SORTING = "to_be_sorting";
-    private static final String SORTING_FINISH = "sorting_finish";
-    private static final String FINISH = "finish";
+    public static final String TO_BE_CONFIRMED = "to_be_confirmed";
+    public static final String TO_BE_RECEIVED = "to_be_received";
+    public static final String STORE_REVOCATION = "store_revocation";
+    public static final String LOGISTICS_OVERRULE = "logistics_overrule";
+    public static final String TO_BE_OUT_STORAGE = "to_be_out_storage";
+    public static final String TO_BE_SORTING = "to_be_sorting";
+    public static final String SORTING_FINISH = "sorting_finish";
+    public static final String FINISH = "finish";
 
     public OrderService() {
         super("s_order", new TableBean("s_order", columnNameArr, columnTypeArr, columnCommentArr));
@@ -137,7 +137,6 @@ public class OrderService extends BaseService {
         String orderType = json.getString("order_type");
         String createId = usu.getSysUserId();
         String createDate = DateUtil.GetDateTime();
-        String orderState = TO_BE_CONFIRMED;
         Map<String, Object> orderItemMap = new HashMap<>();
         JSONArray orderItem = json.getJSONArray("order_item");//id和number
         try {
@@ -171,7 +170,7 @@ public class OrderService extends BaseService {
             order.set("arrive_date", arriveDate);
             order.set("create_id", createId);
             order.set("create_date", createDate);
-            order.set("order_state", orderState);
+            order.set("order_state", TO_BE_CONFIRMED);
             order.set("order_type", orderType);
             Map<String, Record> result = getBomMaterialMap(productList, null);
             Map<String, Record> oldMaterialMap = getBomMaterialFromDateToDateMap(orderDate, arriveDate, null, null);
@@ -215,8 +214,7 @@ public class OrderService extends BaseService {
     public Map<String, Record> getBomMaterialMap(List<Record> productList, Map<String, Record> map) {
         Map<String, Record> result = map != null ? map : new HashMap<>();
         if (productList != null && productList.size() > 0) {
-            for (int i = 0; i < productList.size(); i++) {
-                Record record = productList.get(i);
+            for (Record record : productList) {
                 result = getOneProductdBomMaterialMap(record, result);
             }
         }
@@ -229,7 +227,7 @@ public class OrderService extends BaseService {
      * @param map
      * @return
      */
-    public Map<String, Record> getOneProductdBomMaterialMap(Record record, Map<String, Record> map){
+    private Map<String, Record> getOneProductdBomMaterialMap(Record record, Map<String, Record> map){
         Map<String, Record> result = map != null ? map : new HashMap<>();
         JSONObject json = JSON.parseObject(record.getStr("bom"));
         JSONArray bomArray = json.getJSONArray("bom");
@@ -370,7 +368,7 @@ public class OrderService extends BaseService {
                 warehouseOutOrderList.add(warehouseOutOrder);
             }
             JSONObject orderItemObj = JSON.parseObject(order.getStr("order_item"));
-            if(warehouseOutOrderList != null && warehouseOutOrderList.size() > 0){
+            if(warehouseOutOrderList.size() > 0){
                 Db.batchSave(warehouseOutOrderService.getTableName(), warehouseOutOrderList, warehouseOutOrderList.size());
                 JSONArray orderItemArray = JSONArray.parseArray(JSON.toJSONString(BeanUtils.recordListToMapList(warehouseOutOrderList)));
                 orderItemObj.put("warehouseOutOrderList", orderItemArray);
