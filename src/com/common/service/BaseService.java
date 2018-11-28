@@ -1,22 +1,29 @@
 package com.common.service;
 
 import com.alibaba.druid.util.StringUtils;
-import com.exception.PcException;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
+import com.constants.DictionaryConstants;
 import com.constants.KEY;
 import com.constants.Sql;
+import com.exception.PcException;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
+import com.utils.DateUtil;
 import com.utils.UUIDTool;
-import com.utils.UserSessionUtil;
+import com.works.pc.sys.services.SysUserService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.constants.DictionaryConstants.PROCESS_TYPE;
 
 @Before(Tx.class)
 public abstract class BaseService implements KEY, Sql{
@@ -204,8 +211,6 @@ public abstract class BaseService implements KEY, Sql{
                         if(sql != null){
                             result.append(sql);
                         }
-                    }else if(entry.getKey().startsWith("$fromTo")){
-                        result.append(createFromTo(flag, entry, params));
                     }
                 }
             }
@@ -339,25 +344,6 @@ public abstract class BaseService implements KEY, Sql{
     }
 
     /**
-     * 创建范围查询子句
-     * @param flag 是否使用默认字段
-     * @param entry record子项
-     * @param params 替换问号的参数集合
-     * @return
-     * @throws PcException
-     */
-    private StringBuilder createFromTo(boolean flag, Map.Entry<String, Object> entry, List<Object> params) {
-        String andOr = entry.getKey().split("#")[1];
-        String sql = entry.getKey().split("#")[2];
-        StringBuilder result = new StringBuilder(" " + andOr + " " + sql);
-        Object[] paramsArr = (Object[]) entry.getValue();
-        for(Object obj : paramsArr){
-            params.add(obj);
-        }
-        return result;
-    }
-
-    /**
      * 根据表的基本字段处理record，防止新增或者修改时找不到字段问题
      * @param record
      * @return
@@ -421,6 +407,29 @@ public abstract class BaseService implements KEY, Sql{
     }
 
     /**
+     * 更新可用门店/仓库库存change_record时通用的方法
+     * 涉及模块：门店入库、盘点、退货、废弃；仓库盘点、移库；采购入库，采购退货
+     * @date 2018-11-26
+     * @param changeR 可用库存
+     * @param stockR 库存记录/盘点项记录
+     * @param record 涉及到的模块记录，如盘点单记录信息
+     * @return
+     */
+    public String updateChangeRecord(Record changeR,Record stockR,Record record){
+        SysUserService sysUserService=enhance(SysUserService.class);
+        Map<String,Record> userMap=sysUserService.getUsers();
+        changeR.set("handle_time", DateUtil.GetDateTime());
+        changeR.set("handle_record_id",record.getStr("id"));
+        changeR.set("handle_name",userMap.get(changeR.getStr("handle_id")).getStr("nickname"));
+        changeR.set("before_quantity",stockR.getDouble("available_quantity"));
+        changeR.set("handle_type_text", DictionaryConstants.DICT_STRING_MAP.get(PROCESS_TYPE).get(changeR.getStr("handle_type")));
+        JSONObject crJSOB=JSONObject.parseObject(stockR.getStr("change_record"));
+        JSONArray processArray=crJSOB.getJSONArray("process");
+        processArray.add(changeR.getColumns());
+        return JSON.toJSONString(crJSOB);
+    }
+
+    /**
      * list方法返回之前执行的方法
      * @param list 处理集合
      * @return 返回集合
@@ -437,5 +446,4 @@ public abstract class BaseService implements KEY, Sql{
     public String getTableName() {
         return tableName;
     }
-
 }
