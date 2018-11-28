@@ -45,9 +45,11 @@ public class OrderScrapService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        List<Record> list=page.getList();
-        for (Record r:list){
-            r.set("order_item", JSONObject.parseObject(r.getStr("order_item")));
+        if (page!=null&&page.getList()!=null&&page.getList().size()>0){
+            List<Record> list=page.getList();
+            for (Record r:list){
+                r.set("order_item", JSONObject.parseObject(r.getStr("order_item")));
+            }
         }
         return page;
      }

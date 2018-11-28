@@ -54,9 +54,11 @@ public class PurchaseOrderService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        List<Record> list=page.getList();
-        for (Record r:list){
-            r.set("item", JSONObject.parseObject(r.getStr("item")));
+        if (page!=null&&page.getList()!=null&&page.getList().size()>0){
+            List<Record> list=page.getList();
+            for (Record r:list){
+                r.set("item", JSONObject.parseObject(r.getStr("item")));
+            }
         }
         return page;
      }

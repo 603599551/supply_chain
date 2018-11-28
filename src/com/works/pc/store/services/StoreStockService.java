@@ -45,38 +45,39 @@ public class StoreStockService extends BaseService {
 
     @Override
     public List<Record> listBeforeReturn(List<Record> list) {
-        Record record;
-        JSONObject jsonObject;
-        double quantity;
-        double available_quantity;
-        for (Record r:list){
-            jsonObject=JSONObject.parseObject(r.getStr("material_data"));
-            r.set("material_data",jsonObject);
-            record=BeanUtils.jsonToRecord(jsonObject);
-            record.set("quantity",r.getStr("quantity"));
-            quantity=getMoney(smallUnit2outUnitDecil(record));
-            r.set("quantity",quantity);
-            //可用库存回显，将最小单位换算成出库单位，待前端测试！
-            record.set("available_quantity",r.getStr("available_quantity"));
-            available_quantity=getMoney(smallUnit2outUnitDecil(record,"available_quantity"));
-            r.set("available_quantity",available_quantity);
+        if (list!=null&&list.size()>0){
+            Record record;
+            JSONObject jsonObject;
+            double quantity;
+            double available_quantity;
+            for (Record r:list){
+                jsonObject=JSONObject.parseObject(r.getStr("material_data"));
+                r.set("material_data",jsonObject);
+                record=BeanUtils.jsonToRecord(jsonObject);
+                record.set("quantity",r.getStr("quantity"));
+                quantity=getMoney(smallUnit2outUnitDecil(record));
+                r.set("quantity",quantity);
+                //可用库存回显，将最小单位换算成出库单位，待前端测试！
+                record.set("available_quantity",r.getStr("available_quantity"));
+                available_quantity=getMoney(smallUnit2outUnitDecil(record,"available_quantity"));
+                r.set("available_quantity",available_quantity);
+            }
         }
         return list;
     }
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        List<Record> list=page.getList();
-        Record record;
-        double quantity;
-        JSONObject jsonObject;
-        for (Record r:list){
-            jsonObject=JSONObject.parseObject(r.getStr("material_data"));
-            r.set("material_data",jsonObject);
-            record=BeanUtils.jsonToRecord(jsonObject);
-            record.set("quantity",r.getStr("quantity"));
-            quantity=getMoney(smallUnit2outUnitDecil(record));
-            r.set("quantity",quantity);
+        if (page!=null&&page.getList()!=null&&page.getList().size()>0){
+            List<Record> list=page.getList();
+            for (Record r:list){
+                JSONObject jsonObject=JSONObject.parseObject(r.getStr("material_data"));
+                r.set("material_data",jsonObject);
+                Record record=BeanUtils.jsonToRecord(jsonObject);
+                record.set("quantity",r.getStr("quantity"));
+                double quantity=getMoney(smallUnit2outUnitDecil(record));
+                r.set("quantity",quantity);
+            }
         }
         return page;
      }

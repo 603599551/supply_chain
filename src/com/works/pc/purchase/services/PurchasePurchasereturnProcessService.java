@@ -58,12 +58,14 @@ public class PurchasePurchasereturnProcessService extends BaseService {
 
     @Override
     public Page<Record> queryBeforeReturn(Page<Record> page) {
-        List<Record> list=page.getList();
-        for (Record r:list){
-            if (!StringUtils.equals(r.getStr("purchase_order_state"),"warehouse")){
-                JSONObject jsonObject=JSONObject.parseObject(r.getStr("item"));
-                r.set("item", jsonObject.getJSONArray("item"));
-                r.set("total_price",jsonObject.getDoubleValue("total_price"));
+        if (page!=null&&page.getList()!=null&&page.getList().size()>0){
+            List<Record> list=page.getList();
+            for (Record r:list){
+                if (!StringUtils.equals(r.getStr("purchase_order_state"),"warehouse")){
+                    JSONObject jsonObject=JSONObject.parseObject(r.getStr("item"));
+                    r.set("item", jsonObject.getJSONArray("item"));
+                    r.set("total_price",jsonObject.getDoubleValue("total_price"));
+                }
             }
         }
         return page;
