@@ -2,6 +2,8 @@ package com.utils;
 
 import com.bean.UserBean;
 import com.constants.KEY;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.Record;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -28,6 +30,13 @@ public class UserSessionUtil {
         }
 //        session=request.getSession();
 //        userBean=(UserBean)session.getAttribute(KEY.SESSION_USER);
+    }
+
+    public UserSessionUtil(String userId){
+        String sql = "select su.*, sr.name roleName from s_sys_user su, s_sys_role sr where su.id=? and su.role_id=sr.id";
+        Record record = Db.findFirst(sql, userId);
+        UserBean ub = new UserBean(record);
+        this.setUserBean(ub);
     }
 
     public boolean isLogin(){

@@ -2,6 +2,7 @@ package com.jfinal;
 
 import com.common.controllers.HomeCtrl;
 import com.common.controllers.LoginCtrl;
+import com.works.app.sorting.controllers.SortingOrderCtrl;
 import com.works.common.controllers.CommonColorCtrl;
 import com.works.common.controllers.DictionaryCtrl;
 import com.works.common.controllers.OrderNumberCtrl;
@@ -28,7 +29,7 @@ import com.works.pc.store.controllers.StoreProductRelationCtrl;
 import com.works.pc.store.controllers.StoreStockCtrl;
 import com.works.pc.supplier.controllers.SupplierCtrl;
 import com.works.pc.sys.controllers.*;
-import com.works.pc.warehourse.controllers.*;
+import com.works.pc.warehouse.controllers.*;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -92,6 +93,9 @@ public class Config extends JFinalConfig {
         routes.add("/mgr/works/pc/warehouseCountCtrl", WarehouseCountCtrl.class);
         routes.add("/mgr/works/pc/warehouseScrapCtrl", WarehouseScrapCtrl.class);
         routes.add("/mgr/works/pc/warehouseStockCtrl", WarehouseStockCtrl.class);
+
+
+        routes.add("/wx/sorting/sortingOrderCtrl", SortingOrderCtrl.class);
 
 
     }

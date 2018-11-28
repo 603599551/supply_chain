@@ -1,6 +1,9 @@
 package com.utils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.json.Json;
 import com.jfinal.plugin.activerecord.Record;
 import org.apache.commons.lang.StringUtils;
 
@@ -148,5 +151,31 @@ public class BeanUtils {
             mapList.add(map);
         }
         return mapList;
+    }
+
+    /**
+     * 将record对象转化成json对象
+     * @param record
+     * @return
+     */
+    public static JSONObject recordToJson(Record record){
+        JSONObject result = JSONObject.parseObject(JSON.toJSONString(record.getColumns()));
+        return result;
+    }
+
+    /**
+     * 将JSONArray转化成List
+     * @param jsonArray
+     * @return
+     */
+    public static List<Record> jsonArrayToList(JSONArray jsonArray){
+        List<Record> result = new ArrayList<>();
+        if(jsonArray != null && jsonArray.size() > 0){
+            for(int i = 0; i < jsonArray.size(); i++){
+                Record record = jsonToRecord(jsonArray.getJSONObject(i));
+                result.add(record);
+            }
+        }
+        return result;
     }
 }

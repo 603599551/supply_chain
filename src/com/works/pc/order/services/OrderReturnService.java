@@ -12,7 +12,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.DateUtil;
 import com.works.pc.store.services.StoreStockService;
-import com.works.pc.warehourse.services.WarehouseStockService;
+import com.works.pc.warehouse.services.WarehouseStockService;
 
 import java.util.List;
 

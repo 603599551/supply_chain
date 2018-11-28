@@ -16,7 +16,7 @@ import com.utils.DateUtil;
 import com.utils.UUIDTool;
 import com.utils.UnitConversion;
 import com.works.pc.supplier.services.SupplierService;
-import com.works.pc.warehourse.services.WarehouseStockService;
+import com.works.pc.warehouse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
 import java.text.DecimalFormat;

@@ -1,4 +1,4 @@
-package com.works.pc.warehourse.controllers;
+package com.works.pc.warehouse.controllers;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -9,7 +9,7 @@ import com.utils.BeanUtils;
 import com.utils.DateUtil;
 import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
-import com.works.pc.warehourse.services.WarehouseCountService;
+import com.works.pc.warehouse.services.WarehouseCountService;
 import org.apache.commons.lang.StringUtils;
 
 import static com.common.service.OrderNumberGenerator.getStoreCountOrderNumber;

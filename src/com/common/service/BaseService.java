@@ -12,6 +12,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.UUIDTool;
+import com.utils.UserSessionUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -203,6 +204,8 @@ public abstract class BaseService implements KEY, Sql{
                         if(sql != null){
                             result.append(sql);
                         }
+                    }else if(entry.getKey().startsWith("$fromTo")){
+                        result.append(createFromTo(flag, entry, params));
                     }
                 }
             }
@@ -336,6 +339,25 @@ public abstract class BaseService implements KEY, Sql{
     }
 
     /**
+     * 创建范围查询子句
+     * @param flag 是否使用默认字段
+     * @param entry record子项
+     * @param params 替换问号的参数集合
+     * @return
+     * @throws PcException
+     */
+    private StringBuilder createFromTo(boolean flag, Map.Entry<String, Object> entry, List<Object> params) {
+        String andOr = entry.getKey().split("#")[1];
+        String sql = entry.getKey().split("#")[2];
+        StringBuilder result = new StringBuilder(" " + andOr + " " + sql);
+        Object[] paramsArr = (Object[]) entry.getValue();
+        for(Object obj : paramsArr){
+            params.add(obj);
+        }
+        return result;
+    }
+
+    /**
      * 根据表的基本字段处理record，防止新增或者修改时找不到字段问题
      * @param record
      * @return
@@ -415,4 +437,5 @@ public abstract class BaseService implements KEY, Sql{
     public String getTableName() {
         return tableName;
     }
+
 }

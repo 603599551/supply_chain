@@ -3,19 +3,14 @@ package com.works.pc.goods.services;
 import com.alibaba.fastjson.JSONObject;
 import com.common.service.BaseService;
 import com.bean.TableBean;
-import com.common.service.OrderNumberGenerator;
 import com.exception.PcException;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.utils.*;
 import com.works.pc.order.services.OrderService;
-import com.works.pc.purchase.services.PurchaseOrderService;
 import com.works.pc.store.services.StoreProductRelationService;
-import com.works.pc.store.services.StoreStockService;
-import com.works.pc.supplier.services.SupplierService;
 import com.works.pc.sys.services.CatalogService;
-import com.works.pc.warehourse.services.WarehouseStockService;
 
 import java.util.*;
 

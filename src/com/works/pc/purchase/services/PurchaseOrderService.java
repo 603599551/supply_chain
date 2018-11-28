@@ -14,7 +14,7 @@ import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.utils.BeanUtils;
 import com.utils.DateUtil;
-import com.works.pc.warehourse.services.WarehouseStockService;
+import com.works.pc.warehouse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

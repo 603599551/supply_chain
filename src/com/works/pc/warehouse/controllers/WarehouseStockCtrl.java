@@ -1,4 +1,4 @@
-package com.works.pc.warehourse.controllers;
+package com.works.pc.warehouse.controllers;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -9,7 +9,7 @@ import com.utils.BeanUtils;
 import com.utils.JsonHashMap;
 import com.utils.UserSessionUtil;
 import com.works.pc.goods.services.MaterialService;
-import com.works.pc.warehourse.services.WarehouseStockService;
+import com.works.pc.warehouse.services.WarehouseStockService;
 import org.apache.commons.lang.StringUtils;
 
 import static com.utils.NumberUtils.getMoney;

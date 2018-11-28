@@ -44,7 +44,10 @@ public class OrderNumberGenerator {
      * 门店废弃单类型
      */
     private static final String TYPE_MDFQ="MDFQ";
-
+    /**
+     * 仓库出库单类型
+     */
+    private static final String TYPE_CKCK="CKCK";
 
     public static synchronized String getOrderNumber(String name,String remark,String type){
         String reStr="";
@@ -128,6 +131,14 @@ public class OrderNumberGenerator {
      */
     public static synchronized String getStoreScrapReturnNumber(){
         return getOrderNumber("门店废弃单","门店废弃编号",TYPE_MDFQ);
+    }
+
+    /**
+     * 生成仓库出库单编号
+     * @return
+     */
+    public static synchronized String getWarehouseOutOrderNumber(){
+        return getOrderNumber("仓库出库单","仓库出库编号",TYPE_CKCK);
     }
 
 //    /**

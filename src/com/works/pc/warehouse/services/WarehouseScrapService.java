@@ -1,4 +1,4 @@
-package com.works.pc.warehourse.services;
+package com.works.pc.warehouse.services;
 
 import com.common.service.BaseService;
 import com.bean.TableBean;

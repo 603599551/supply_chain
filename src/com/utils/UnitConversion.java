@@ -45,6 +45,26 @@ public class UnitConversion {
     }
 
     /**
+     * 将最小单位的数量，换算成提货单位
+     * 如果提货单位是大单位，那么门店想要的数量（最小单位）换算成提货单位的公式是：wantNumOutUnit=门店想要数量/(大单位数量*大规格数量)，不能整除的+1
+     * 如果提货单位是大单位，那么门店想要的数量（最小单位）换算成提货单位的公式是：wantNumOutUnit=门店想要数量/大单位数量，不能整除的+1
+     *
+     * @param num        要换算的数量（最小单位）
+     * @param material   原料Record对象
+     * @return
+     */
+    public static int smallUnit2outUnit(int num, Record material) {
+        String mid_unit = material.getStr("mid_unit");
+        NumberUtils.parseInt(material.get("min2mid_num"), 0);
+        int min2mid_num = NumberUtils.parseInt(material.get("min2mid_num"), 0);
+        String max_unit = material.getStr("max_unit");
+        int mid2max_num = NumberUtils.parseInt(material.get("mid2max_num"), 0);
+        String out_unit = material.getStr("out_unit");
+        String min_unit = material.getStr("min_unit");
+        return smallUnit2outUnit(num, min_unit, mid_unit, min2mid_num, max_unit, mid2max_num, out_unit);
+    }
+
+    /**
      * 将提货单位的数量，换算成最小单位的数量
      * 从record中取出如下数据：num,min_unit,mid_unit,min2mid_num,max_unit,mid2max_num,out_unit
      * @param r
@@ -62,6 +82,27 @@ public class UnitConversion {
         int mid2max_num = NumberUtils.parseInt(boxAttrNumObj, 0);
         int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
         int num=NumberUtils.parseInt(numObj, 0);
+
+        return outUnit2SmallUnit(num,min_unit,mid_unit, min2mid_num, max_unit,mid2max_num, out_unit);
+    }
+
+    /**
+     * 将提货单位的数量，换算成最小单位的数量
+     * 从record中取出如下数据：num,min_unit,mid_unit,min2mid_num,max_unit,mid2max_num,out_unit
+     * @param r
+     * @return
+     */
+    public static int outUnit2SmallUnit(int number, Record r) {
+        String out_unit = r.getStr("out_unit");//出库单位
+        String max_unit = r.getStr("max_unit");//大单位
+        Object boxAttrNumObj = r.get("mid2max_num");//大单位换算成箱的数值
+        String mid_unit = r.getStr("mid_unit");//大单位
+        String min_unit = r.getStr("min_unit");//最小单位
+        Object unitNumObj = r.getStr("min2mid_num");//小单位换算成大单位的数值
+
+        int mid2max_num = NumberUtils.parseInt(boxAttrNumObj, 0);
+        int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
+        int num=NumberUtils.parseInt(number, 0);
 
         return outUnit2SmallUnit(num,min_unit,mid_unit, min2mid_num, max_unit,mid2max_num, out_unit);
     }

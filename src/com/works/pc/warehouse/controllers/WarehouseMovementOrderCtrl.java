@@ -1,13 +1,13 @@
-package com.works.pc.warehourse.controllers;
+package com.works.pc.warehouse.controllers;
 
 import com.common.controllers.BaseCtrl;
 import com.jfinal.plugin.activerecord.Record;
-import com.works.pc.warehourse.services.WarehouseScrapService;
+import com.works.pc.warehouse.services.WarehouseMovementOrderService;
 
-public class WarehouseScrapCtrl extends BaseCtrl<WarehouseScrapService> {
+public class WarehouseMovementOrderCtrl extends BaseCtrl<WarehouseMovementOrderService> {
 
-    public WarehouseScrapCtrl() {
-        super(WarehouseScrapService.class);
+    public WarehouseMovementOrderCtrl() {
+        super(WarehouseMovementOrderService.class);
     }
 
     @Override
