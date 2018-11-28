@@ -36,6 +36,8 @@ public class DictionaryConstants {
     public static final String STORE_SCRAP_TYPE = "store_scrap_type";
     //门店废弃单状态
     public static final String STORE_SCRAP_STATE = "store_scrap_state";
+    //流程类型
+    public static final String PROCESS_TYPE = "process_type";
 
 
 
