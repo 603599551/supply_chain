@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.constants.DictionaryConstants.PROCESS_TYPE;
+import static com.utils.BeanUtils.jsonArrayToList;
 import static com.utils.BeanUtils.recordListToMapList;
 import static com.utils.NumberUtils.getMoney;
 
@@ -348,10 +349,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         JSONArray totalItemsArray=totalJson.getJSONArray("item");
         int totalLen=totalItemsArray.size();
         //JSONArray转List<Record>
-        List<Record> totalItemList=new ArrayList<>(totalLen);
-        for (int i=0;i<totalLen;i++){
-            totalItemList.add(BeanUtils.jsonToRecord(totalItemsArray.getJSONObject(i)));
-        }
+        List<Record> totalItemList=jsonArrayToList(totalItemsArray);
         List<Record> multipleItemR=Db.find(multipleItemSql,id);
         //key为原料的id，value为原料信息
         Map<String,JSONObject> multipleItemsMap=new HashMap<>();
@@ -522,10 +520,6 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         if (StringUtils.equals(purchaseOrderState,"logistics_clearance")){
             record.remove("image","return_reason");
         }
-        //将item的JSON对象数组转化为JSON字符串
-//        Map<String,JSONArray> itemMap=new HashMap();
-//        itemMap.put("item",record.get("item"));
-//        String item=JSON.toJSONString(itemMap);
         String item=insertTotalPrice(record.get("item"));
         record.set("item",item);
         if (!super.updateById(record)){

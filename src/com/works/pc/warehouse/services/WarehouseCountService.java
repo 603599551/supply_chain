@@ -1,6 +1,5 @@
 package com.works.pc.warehouse.services;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.utils.BeanUtils.jsonArrayToString;
 import static com.utils.BeanUtils.recordListToMapList;
 
 public class WarehouseCountService extends BaseService {
@@ -104,10 +104,8 @@ public class WarehouseCountService extends BaseService {
         }
         List<Map<String,Object>>mapList=recordListToMapList(materialList);
         JSONArray jsonArray=JSONArray.parseArray(JSONArray.toJSONString(mapList));
-        Map<String,JSONArray> map=new HashMap(1);
-        map.put("items",jsonArray);
         record.set("sort",super.getCurrentSort()+1);
-        record.set("count_item", JSON.toJSONString(map));
+        record.set("count_item", jsonArrayToString(jsonArray,"items"));
         record.remove("state");
         return super.add(record);
     }

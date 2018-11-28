@@ -1,6 +1,5 @@
 package com.works.pc.purchase.services;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
@@ -25,6 +24,7 @@ import java.util.Map;
 import static com.common.service.OrderNumberGenerator.getWarehousePurchaseOrderNumber;
 import static com.constants.DictionaryConstants.PURCHASE_ORDER_TYPE;
 import static com.constants.DictionaryConstants.PURCHASE_TYPE;
+import static com.utils.BeanUtils.jsonArrayToString;
 
 /**
  * 该类实现以下功能：
@@ -106,10 +106,7 @@ public class PurchaseOrderService extends BaseService {
         String purchaseType="";
         //采购单备注
         String remark="";
-        JSONArray jsonArray=JSONArray.parseArray(record.getStr("item"));
-        Map<String,JSONArray> map=new HashMap(1);
-        map.put("item",jsonArray);
-        item=JSON.toJSONString(map);
+        item=jsonArrayToString(JSONArray.parseArray(record.getStr("item")),"item");
         record.set("item",item);
         purchaseType=record.getStr("purchase_type");
         remark=record.getStr("remark");

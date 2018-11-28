@@ -3,11 +3,11 @@ package com.utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.jfinal.json.Json;
 import com.jfinal.plugin.activerecord.Record;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -177,5 +177,17 @@ public class BeanUtils {
             }
         }
         return result;
+    }
+
+    /**
+     * 将单个JSONArray转化成JSONString
+     * @param jsonArray
+     * @param columnName
+     * @return
+     */
+    public static String jsonArrayToString(JSONArray jsonArray,String columnName){
+        Map<String,JSONArray> map=new HashMap<>(1);
+        map.put(columnName,jsonArray);
+        return JSON.toJSONString(map);
     }
 }
