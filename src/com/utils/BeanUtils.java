@@ -190,4 +190,14 @@ public class BeanUtils {
         map.put(columnName,jsonArray);
         return JSON.toJSONString(map);
     }
+
+    /**
+     * 从JSON字符串中获取JSONArray
+     * @param jsonString
+     * @param columnName
+     * @return
+     */
+    public static JSONArray getJSONArrayFromJSONString(String jsonString,String columnName){
+        return JSONObject.parseObject(jsonString).getJSONArray(columnName);
+    }
 }
