@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
+import com.common.service.ProcessConstants;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -36,7 +37,13 @@ import static com.constants.DictionaryConstants.PURCHASE_RETURN_TYPE;
 public class PurchaseReturnService extends BaseService {
 
     private static final String TABLENAME="s_purchase_return";
-    private static String[] purchaseReturnState={"logistics_clearance","purchase_audit","finance_confirm","logistics_delivery","return_shutdown","return_finish"};
+    private static final String LOGISTICS_CLEARANCE="logistics_clearance";
+    private static final String PURCHASE_AUDIT="purchase_audit";
+    private static final String FINANCE_CONFIRM="finance_confirm";
+    private static final String LOGISTICS_DELIVERY="logistics_delivery";
+    private static final String RETURN_FINISH="return_finish";
+    private static final String RETURN_SHUTDOWN="return_shutdown";
+    private static String[] purchaseReturnState= ProcessConstants.getPurchaseReturnProcess();
     private static String[] columnNameArr = {"id","supplier_id","num","from_purchase_order_id","from_purchase_order_num","return_item","color","order_state","close_date","close_reason","close_id","city","remark","image","return_reason","create_date"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","TEXT","TEXT","TEXT","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","","","","",""};
@@ -144,7 +151,7 @@ public class PurchaseReturnService extends BaseService {
             Map<String,JSONArray> RIP=new HashMap<>(1);
             RIP.put("item",entry.getValue());
             record1.set("return_item", JSON.toJSONString(RIP));
-            record1.set("order_state",purchaseReturnState[0]);
+            record1.set("order_state",LOGISTICS_CLEARANCE);
             record1.set("city",city);
             record1.set("create_date",DateUtil.GetDateTime());
             returnItemList.add(record1);
@@ -177,7 +184,7 @@ public class PurchaseReturnService extends BaseService {
      */
     public boolean shutdown(Record r) throws PcException {
         Record record = this.findById(r.getStr("id"));
-        record.set("state", purchaseReturnState[4]);
+        record.set("state", RETURN_SHUTDOWN);
         record.set("close_date", DateUtil.GetDateTime());
         record.set("close_reason", r.getStr("close_reason"));
         record.set("close_id", r.getStr("close_id"));
@@ -237,13 +244,7 @@ public class PurchaseReturnService extends BaseService {
         int count=0;
         for (int i=0;i<stateLen;i++){
             if (StringUtils.equals(record.getStr("order_state"),purchaseReturnState[i])){
-                if (i==5){
-                    count=5;
-                }else if (i==4){
-                    count=-1;
-                }else {
-                    count=i+1;
-                }
+                count=i+1;
                 break;
             }
         }
