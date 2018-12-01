@@ -79,6 +79,17 @@ public class NumberUtils {
         return returnValue;
     }
 
+    /**
+     * 四舍五入把double转化int整型，0.5进一，小于0.5不进一
+     * @date 2018-12-01
+     * @param d
+     * @return
+     */
+    public static int getInt(double d){
+        BigDecimal bd=new BigDecimal(d).setScale(0,BigDecimal.ROUND_HALF_UP);
+        return bd.intValue();
+    }
+
     public static void main(String[] args) {
         int i = parseInt((Object)null, 0);
         System.out.println(i);

@@ -289,11 +289,11 @@ public class UnitConversion {
      * @param r 默认字段名为quantity
      * @return
      */
-    public static double outUnit2SmallUnitDecil(Record r) {
+    public static int outUnit2SmallUnitDecil(Record r) {
         return outUnit2SmallUnitDecil(r,"quantity");
     }
 
-    public static double outUnit2SmallUnitDecil(Record r,String numName) {
+    public static int outUnit2SmallUnitDecil(Record r,String numName) {
         String out_unit = r.getStr("out_unit");//出库单位
         String max_unit = r.getStr("max_unit");//大单位
         String boxAttrNumObj = r.getStr("mid2max_num");//中间单位换算成大单位的数值
@@ -305,6 +305,6 @@ public class UnitConversion {
         int min2mid_num = NumberUtils.parseInt(unitNumObj, 0);
         double num=NumberUtils.parseDouble(numObj, 0);
 
-        return outUnit2SmallUnitDecil(num,min_unit,mid_unit, min2mid_num, max_unit,boxAttrNumObj, out_unit);
+        return NumberUtils.getInt(outUnit2SmallUnitDecil(num,min_unit,mid_unit, min2mid_num, max_unit,boxAttrNumObj, out_unit));
     }
 }
