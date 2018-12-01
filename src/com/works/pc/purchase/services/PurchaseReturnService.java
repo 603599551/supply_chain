@@ -102,33 +102,33 @@ public class PurchaseReturnService extends BaseService {
             //引单新建时，将库存记录id存进item数组中的每个元素，并从stockMap中拿change_record和available_quantity（最小单位）
             if (stockMapR!=null){
                 jsob.put("stock_id",stockMapR.getStr("id"));
-                aq= stockMapR.getDouble("available_quantity");
+//                aq= stockMapR.getDouble("available_quantity");
                 baseR=stockMapR;
             }else {
-                aq=jsob.getDouble("available_quantity");
+//                aq=jsob.getDouble("available_quantity");
                 baseR=BeanUtils.jsonToRecord(jsob);
             }
             Record aStockR=new Record();
             aStockR.set("id",jsob.getString("stock_id"));
             //可用库存=可用库存-退货量
-            aStockR.set("available_quantity",aq-UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob),"current_quantity"));
+//            aStockR.set("available_quantity",aq-UnitConversion.outUnit2SmallUnitDecil(BeanUtils.jsonToRecord(jsob),"current_quantity"));
             Record changeR=new Record();
             changeR.set("handle_type","purchase_return");
             changeR.set("handle_tablename",TABLENAME);
             changeR.set("handle_id",record.getStr("handle_id"));
-            changeR.set("after_quantity",aStockR.getDouble("available_quantity"));
+//            changeR.set("after_quantity",aStockR.getDouble("available_quantity"));
             //这里handle_record_id还没生成，后期重构时要修正
-            aStockR.set("change_record",super.updateChangeRecord(changeR,baseR,record));
+//            aStockR.set("change_record",super.updateChangeRecord(changeR,baseR,record));
             updateStockList.add(aStockR);
             String supplierId=jsob.getString("supplier_id");
             JSONArray ilkArray=returnItemMap.computeIfAbsent(supplierId,k->new JSONArray());
             ilkArray.add(jsob);
         }
         //批量更新可用库存
-        WarehouseStockService warehouseStockService=enhance(WarehouseStockService.class);
-        if (!warehouseStockService.batchUpdate(updateStockList)){
-            return null;
-        }
+//        WarehouseStockService warehouseStockService=enhance(WarehouseStockService.class);
+//        if (!warehouseStockService.batchUpdate(updateStockList)){
+//            return null;
+//        }
         int mapLen=returnItemMap.size();
         //处理新增的退货单List
         List<Record> returnItemList=new ArrayList<>(mapLen);
@@ -207,9 +207,9 @@ public class PurchaseReturnService extends BaseService {
             changeR.set("handle_type","purchase_return");
             changeR.set("handle_tablename",TABLENAME);
             changeR.set("handle_id",record.getStr("close_id"));
-            changeR.set("after_quantity",stockR.getDouble("available_quantity"));
-            stockR.set("change_record",super.updateChangeRecord(changeR,stockR,record));
-            stockR.set("available_quantity",stockR.getDouble("available_quantity")+returnNum);
+//            changeR.set("after_quantity",stockR.getDouble("available_quantity"));
+//            stockR.set("change_record",super.updateChangeRecord(changeR,stockR,record));
+//            stockR.set("available_quantity",stockR.getDouble("available_quantity")+returnNum);
         }
         //批量更新可用库存
         WarehouseStockService warehouseStockService=enhance(WarehouseStockService.class);

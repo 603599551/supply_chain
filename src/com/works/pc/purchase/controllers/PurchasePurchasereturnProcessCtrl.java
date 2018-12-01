@@ -12,8 +12,6 @@ import com.utils.UserSessionUtil;
 import com.works.pc.purchase.services.PurchasePurchasereturnProcessService;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Map;
-
 import static com.constants.DictionaryConstants.PURCHASE_ORDER_TYPE;
 import static com.constants.DictionaryConstants.PURCHASE_TYPE;
 
@@ -85,9 +83,8 @@ public class PurchasePurchasereturnProcessCtrl extends BaseCtrl<PurchasePurchase
         Record record = BeanUtils.jsonToRecord(json);
         try {
             handleUpdateRecord(record);
-            Map<String,Object> resultMap = service.updateByIdReturnMap(record);
-            if((boolean)resultMap.get("flag")){
-                jhm.putSuccess(resultMap);
+            if(service.updateByIdReturnMap(record)){
+                jhm.putSuccess("修改成功！");
             }else{
                 jhm.putFail("修改失败！");
             }

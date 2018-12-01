@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
+import com.common.service.ProcessConstants;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -38,7 +39,14 @@ import static com.utils.BeanUtils.jsonArrayToString;
 public class PurchaseOrderService extends BaseService {
 
     private static final String TABLENAME="s_purchase_order";
-    private static String[] purchaseOrderState={"logistics","purchase","finance","boss","warehouse","shutdown","finish"};
+    private static final String LOGISTICS="logistics";
+    private static final String WAREHOUSE="warehouse";
+    private static final String PURCHASE="purchase";
+    private static final String SHUTDOWN="shutdown";
+    private static final String FINANCE="finance";
+    private static final String FINISH="finish";
+    private static final String BOSS="boss";
+    private static String[] purchaseOrderState= ProcessConstants.getPurchaseProcess();
     private static String[] columnNameArr = {"id","num","from_purchase_order_id","from_purchase_order_num","create_id","create_date","purchase_type","close_date","close_reason","close_id","city","remark","item","state"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","","",""};
@@ -126,7 +134,7 @@ public class PurchaseOrderService extends BaseService {
         logisticsR.set("num",num);
         logisticsR.set("item",item);
         logisticsR.set("purchase_type",purchaseType);
-        logisticsR.set("purchase_order_state",purchaseOrderState[0]);
+        logisticsR.set("purchase_order_state",LOGISTICS);
         logisticsR.set("remark",remark);
         logisticsR.set("parent_id","0");
         logisticsR.set("state","1");
@@ -144,7 +152,7 @@ public class PurchaseOrderService extends BaseService {
         purchaseR.set("item",item);
         purchaseR.set("handle_id",record.getStr("to_user_id"));
         purchaseR.set("purchase_type",purchaseType);
-        purchaseR.set("purchase_order_state",purchaseOrderState[1]);
+        purchaseR.set("purchase_order_state",PURCHASE);
         purchaseR.set("parent_id",logisticsId);
         purchaseR.set("state","0");
         return ppps.add(purchaseR);
@@ -160,11 +168,11 @@ public class PurchaseOrderService extends BaseService {
     public boolean finish(String id)throws PcException {
         Record record = new Record();
         record.set("id", id);
-        record.set("state", purchaseOrderState[6]);
+        record.set("state", FINISH);
         if (!super.updateById(record)) {
             return false;
         }
-        return Db.update("UPDATE s_purchase_purchasereturn_process SET purchase_order_state='finish' WHERE purchase_id=? AND purchase_order_state='warehouse'",id)==0? false:true;
+        return Db.update("UPDATE s_purchase_purchasereturn_process SET purchase_order_state='"+FINISH+"' WHERE purchase_id=? AND purchase_order_state='warehouse'",id)==0? false:true;
     }
 
 
@@ -178,7 +186,7 @@ public class PurchaseOrderService extends BaseService {
     public boolean shutdown(Record r) throws PcException {
         Record record = new Record();
         record.set("id", r.getStr("id"));
-        record.set("state", purchaseOrderState[5]);
+        record.set("state", SHUTDOWN);
         record.set("close_date", DateUtil.GetDateTime());
         record.set("close_reason", r.getStr("close_reason"));
         record.set("close_id", r.getStr("close_id"));
@@ -208,11 +216,7 @@ public class PurchaseOrderService extends BaseService {
         int count=0;
         for (int i=0;i<stateLen;i++){
             if (StringUtils.equals(record.getStr("state"),purchaseOrderState[i])){
-                if (i==6){
-                    count=4+1;
-                }else {
-                    count=i+1;
-                }
+                count=i+1;
                 break;
             }
         }
@@ -267,7 +271,7 @@ public class PurchaseOrderService extends BaseService {
             stageR.set("remark",processR.getStr("remark"));
             List<Record> messageList=new ArrayList<>();
             //物流、采购
-            if (StringUtils.equals(orderState,"logistics")||StringUtils.equals(orderState,"purchase")){
+            if (StringUtils.equals(orderState,LOGISTICS)||StringUtils.equals(orderState,PURCHASE)){
                 if (StringUtils.equals(state,"1")){
                     Record messageR=new Record();
                     messageR.set("length",stageLen);
@@ -286,7 +290,7 @@ public class PurchaseOrderService extends BaseService {
                 }
                 finalList.add(stageR);
                 //财务、老板
-            }else if (StringUtils.equals(orderState,"finance")||StringUtils.equals(orderState,"boss")){
+            }else if (StringUtils.equals(orderState,FINANCE)||StringUtils.equals(orderState,BOSS)){
                 if (StringUtils.equals(state,"1")){
                     Record messageR=new Record();
                     if (StringUtils.equals(orderState,"finance")){
