@@ -15,6 +15,7 @@ import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.ehcache.EhCachePlugin;
 import com.jfinal.render.ViewType;
 import com.jfinal.template.Engine;
+import com.works.common.services.ProcessConfigService;
 import com.works.pc.goods.controllers.GoodsCtrl;
 import com.works.pc.goods.controllers.MaterialCtrl;
 import com.works.pc.goods.controllers.ProductCtrl;
@@ -148,6 +149,7 @@ public class Config extends JFinalConfig {
         String sDate = sdf.format(new Date());
         System.out.println("当前时间：" + sDate);
         DictionaryService.loadDictionary();
+        ProcessConfigService.loadProcessConfig();
     }
 
 }

@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
-import com.common.service.ProcessConstants;
+import com.constants.ProcessConstants;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -25,6 +25,7 @@ import java.util.Map;
 import static com.common.service.OrderNumberGenerator.getWarehousePurchaseOrderNumber;
 import static com.constants.DictionaryConstants.PURCHASE_ORDER_TYPE;
 import static com.constants.DictionaryConstants.PURCHASE_TYPE;
+import static com.constants.ProcessConstants.PURCHASE_PROCESS_TYPE;
 import static com.utils.BeanUtils.jsonArrayToString;
 
 /**
@@ -46,7 +47,7 @@ public class PurchaseOrderService extends BaseService {
     private static final String FINANCE="finance";
     private static final String FINISH="finish";
     private static final String BOSS="boss";
-    private static String[] purchaseOrderState= ProcessConstants.getPurchaseProcess();
+    private static String[] purchaseOrderState= ProcessConstants.PROCESS_STRINGARRAY_MAP.get(PURCHASE_PROCESS_TYPE);
     private static String[] columnNameArr = {"id","num","from_purchase_order_id","from_purchase_order_num","create_id","create_date","purchase_type","close_date","close_reason","close_id","city","remark","item","state"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","","",""};

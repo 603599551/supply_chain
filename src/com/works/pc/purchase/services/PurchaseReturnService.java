@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
-import com.common.service.ProcessConstants;
+import com.constants.ProcessConstants;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -43,7 +43,7 @@ public class PurchaseReturnService extends BaseService {
     private static final String LOGISTICS_DELIVERY="logistics_delivery";
     private static final String RETURN_FINISH="return_finish";
     private static final String RETURN_SHUTDOWN="return_shutdown";
-    private static String[] purchaseReturnState= ProcessConstants.getPurchaseReturnProcess();
+    private static String[] purchaseReturnState= ProcessConstants.PROCESS_STRINGARRAY_MAP.get(ProcessConstants.PURCHASE_RETURN_TYPE);
     private static String[] columnNameArr = {"id","supplier_id","num","from_purchase_order_id","from_purchase_order_num","return_item","color","order_state","close_date","close_reason","close_id","city","remark","image","return_reason","create_date"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR","VARCHAR","TEXT","TEXT","TEXT","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","","","","",""};

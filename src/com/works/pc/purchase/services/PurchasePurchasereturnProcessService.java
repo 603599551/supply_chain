@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bean.TableBean;
 import com.common.service.BaseService;
-import com.common.service.ProcessConstants;
+import com.constants.ProcessConstants;
 import com.constants.DictionaryConstants;
 import com.exception.PcException;
 import com.jfinal.aop.Before;
@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.constants.DictionaryConstants.PROCESS_TYPE;
+import static com.constants.ProcessConstants.PURCHASE_PROCESS_TYPE;
+import static com.constants.ProcessConstants.PURCHASE_RETURN_TYPE;
 import static com.utils.BeanUtils.jsonArrayToList;
 import static com.utils.BeanUtils.recordListToMapList;
 import static com.utils.NumberUtils.getMoney;
@@ -46,9 +48,8 @@ public class PurchasePurchasereturnProcessService extends BaseService {
     private static final String WAREHOUSE="warehouse";
     private static final String PURCHASE="purchase";
     private static final String BOSS="boss";
-    private static String[] purchaseOrderState= ProcessConstants.getPurchaseProcess();
-    private static String[] purchaseReturnState= ProcessConstants.getPurchaseReturnProcess();
-    private static String[] purchaseReturnState1={"logistics_clearance","purchase_audit","finance_confirm","logistics_delivery","return_finish","return_shutdown"};
+    private static String[] purchaseOrderState= ProcessConstants.PROCESS_STRINGARRAY_MAP.get(PURCHASE_PROCESS_TYPE);
+    private static String[] purchaseReturnState= ProcessConstants.PROCESS_STRINGARRAY_MAP.get(PURCHASE_RETURN_TYPE);
     private static String[] columnNameArr = {"id","purchase_id","purchase_return_id","num","handle_id","handle_date","purchase_type","remark","parent_id","to_user_id","state","item","purchase_order_state"};
     private static String[] columnTypeArr = {"VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","VARCHAR","TEXT","VARCHAR"};
     private static String[] columnCommentArr = {"","","","","","","","","","","","",""};
@@ -516,6 +517,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         }
         return addNextReturnStage(record);
     }
+
     /**
      * 采购退货流程阶段2-财务审批
      * @date 2018-12-01
@@ -533,6 +535,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         }
         return addNextReturnStage(record);
     }
+
     /**
      * 采购退货流程阶段3-物流发货
      * @date 2018-12-01
@@ -554,6 +557,7 @@ public class PurchasePurchasereturnProcessService extends BaseService {
         }
         return addNextReturnStage(record);
     }
+
     /**
      * 采购退货流程阶段4-财务收款（退货完成）
      * @date 2018-12-01
