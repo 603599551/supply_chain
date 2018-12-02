@@ -47,7 +47,7 @@ public class NumberUtils {
 
     public static double getMoney(double d) {
         double returnValue = 0.0D;
-        returnValue = (new BigDecimal(d)).setScale(2, 4).doubleValue();
+        returnValue = (new BigDecimal(Double.toString(d))).setScale(2, 4).doubleValue();
         return returnValue;
     }
 
