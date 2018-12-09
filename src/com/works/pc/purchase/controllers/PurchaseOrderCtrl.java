@@ -41,6 +41,7 @@ public class PurchaseOrderCtrl extends BaseCtrl<PurchaseOrderService> {
     public void handleRecord(Record record) {
         record.set("purchase_type_text",DictionaryConstants.DICT_STRING_MAP.get(PURCHASE_TYPE).get(record.getStr("purchase_type")));
         record.set("state_text",DictionaryConstants.DICT_STRING_MAP.get(PURCHASE_ORDER_TYPE).get(record.getStr("state")));
+
     }
 
     /**
